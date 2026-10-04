@@ -8,6 +8,16 @@ Keep the client-to-collector contract vendor-neutral. Separate three concerns: s
 
 The first implemented slice should support the verified CLI path, metadata-only collection, a synthetic check, and a read-only diagnostic UI. Desktop support is a release gate with a capability matrix, not a marketing claim.
 
+For desktop-first users, add a separate [local-history adapter](../guides/local-session-data.md) using documented session files/indexes. This does not depend on live desktop OTel configuration, but its parser and field coverage need version-specific verification. Label it retrospective/derived, not native capture.
+
+## Alternative input: local session history
+
+Start with explicitly selected completed sessions. A native host reader opens event logs or the session index read-only, sanitizes to allowlisted metadata, and produces the same normalized session summaries as native OTel. Do not mount `~/.copilot` wholesale into the Tilt backend or upload it.
+
+Only reconstruct spans for operations whose start/end and identity are evidenced. Tool-call IDs can pair tool events; an event's `parentId` chain is chronological, not a span-parent tree. Missing ephemeral usage stays missing, and overlapping native/imported records must not be double-counted.
+
+The proposed launcher can later add `import --session ID` and `verify --source session-files`, with explicit user selection, adapter/version reporting, privacy checks and completeness status. These are **not implemented commands**. A successful import proves history analysis for that session, not live app telemetry coverage.
+
 ## Proposed architecture
 
 ```text

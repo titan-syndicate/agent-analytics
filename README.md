@@ -8,7 +8,8 @@ turning evidence into better agent tooling, consistent outcomes, and efficient A
 Start with [recommendations for high-volume users](docs/start/recommendations.md),
 then the [30-day pilot](docs/start/pilot.md). The site includes Copilot CLI and
 Honeycomb setup, an illustrative Tilt/Kubernetes lab, a desktop compatibility
-experiment, separate capture/viewer proposals, OpenSearch tradeoffs, and an
+experiment, [local session-file/SQLite analysis](docs/guides/local-session-data.md),
+separate capture/viewer proposals, OpenSearch tradeoffs, and an
 enterprise improvement loop.
 
 This repository currently contains documentation, **not an implemented telemetry

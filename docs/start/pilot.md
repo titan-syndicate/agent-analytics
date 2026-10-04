@@ -14,12 +14,14 @@ The pilot's deliverables are a compatibility matrix, a small session review rubr
 
 | Week | Work | Exit evidence |
 | --- | --- | --- |
-| 1: Capture | CLI and local backend; desktop compatibility check; privacy inspection | Synthetic trace and real safe task visible; content absent; client versions recorded |
+| 1: Capture | CLI/local backend; desktop history fallback and live compatibility check; privacy inspection | Native trace or verified sanitized history summary; source/coverage recorded; no content in analytics output |
 | 2: Baseline | Label accepted/partial/rejected/abandoned outcomes; review typical and outlier sessions | At least 20 labeled comparable tasks; known gaps and missing data reported |
 | 3: Intervention | Improve one skill or integration; pin its version; run matched tasks | Same evaluation rubric applied to baseline and treatment |
 | 4: Decision | Examine quality, latency, usage and engineer feedback together | Written decision, counterexamples, rollback plan, next hypothesis |
 
 Twenty tasks are a learning floor, **not a statistical power guarantee**. If there are too few failures to assess a quality regression, call the result inconclusive rather than declaring equivalence.
+
+Desktop-first participants can use [documented local session history](../guides/local-session-data.md) while live export is unresolved. Mark results as retrospective and keep missing usage/timing visible. Do not compare native and reconstructed measurements as if their coverage were identical.
 
 ## A lightweight review record
 

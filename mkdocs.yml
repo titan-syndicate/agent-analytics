@@ -65,6 +65,7 @@ nav:
       - Local capture with Copilot CLI: guides/copilot-cli.md
       - Tilt + Docker Kubernetes lab: guides/local-lab.md
       - Copilot desktop compatibility: guides/desktop.md
+      - Local session files and SQLite: guides/local-session-data.md
       - Honeycomb and Agent Timeline: guides/honeycomb.md
   - Proposals:
       - Local capture and distribution: proposals/capture.md

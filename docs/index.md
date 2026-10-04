@@ -7,6 +7,8 @@ The goal is not an individual productivity scoreboard. It is an evidence-based e
 !!! tip "The recommended starting point"
     Read [recommendations for high-volume users](start/recommendations.md) first. Use Copilot CLI with a local OpenTelemetry backend for the initial experiment. Keep message content off. Treat desktop capture as a compatibility gate, not an assumption.
 
+Desktop-first users can start with [saved local session data](guides/local-session-data.md) instead of waiting for live export. GitHub documents both app and CLI history in the local session directory/index; retrospective analysis has different privacy boundaries and cannot recover unpersisted metrics.
+
 ## Choose a reading path
 
 | Your question | Start here | Then read |
@@ -14,6 +16,7 @@ The goal is not an individual productivity scoreboard. It is an evidence-based e
 | What should I try this week? | [High-volume recommendations](start/recommendations.md) | [First 30 days](start/pilot.md) |
 | Can I see my local sessions? | [CLI capture](guides/copilot-cli.md) | [Tilt + Kubernetes lab](guides/local-lab.md) |
 | Will the desktop app work? | [Desktop compatibility](guides/desktop.md) | [Capture proposal](proposals/capture.md) |
+| Can I analyze existing app history? | [Local session files and SQLite](guides/local-session-data.md) | [Improvement loop](insights/improvement-loop.md) |
 | How did Honeycomb show agent context? | [Honeycomb setup](guides/honeycomb.md) | [Viewer proposal](proposals/viewer.md) |
 | Should we use OpenSearch? | [Backend decision](proposals/backends.md) | [Enterprise scaling](enterprise/scaling.md) |
 | What will we actually learn? | [Insight catalog](insights/catalog.md) | [Improvement loop](insights/improvement-loop.md) |
@@ -44,6 +47,8 @@ Copilot runtime
 | Local LGTM with Tilt | Illustrative lab recipe, not a deployed or packaged service |
 | Honeycomb Agent Timeline | Documented upstream capability; setup guide |
 | Desktop OTel capture | Unverified; managed telemetry support is explicitly limited upstream |
+| Local app/CLI history and `/chronicle` | Documented upstream capability; retrospective analysis guide |
+| Session-file importer / derived OTel spans | Proposed, not implemented |
 | One-command launcher / installable skill | Proposed, not implemented |
 | Session-oriented local web client | Proposed, not implemented |
 | Automated insight and experiment service | Proposed, not implemented |

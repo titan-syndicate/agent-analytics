@@ -19,6 +19,8 @@ Even structure can reveal work habits, file paths or identifying metadata. `endu
 
 Client switches are convenient, not an enforcement layer. The proposed collector gateway should allowlist metadata fields and remove content before persistent queues, backend storage or external exporters.
 
+The [local-history fallback](../guides/local-session-data.md) has an earlier boundary: Copilot's saved session files/index can already contain prompts and tool results even when OTel content export is off. A reader must sanitize before emitting any analytics record or diagnostic log. Built-in `/chronicle` queries may send relevant history to the model; “read from local disk” does not guarantee no egress.
+
 Cover resource attributes, span attributes, span names, span events and their attributes, log bodies, metric datapoint attributes and any opaque nested payload. Unknown fields are denied for shared/exported metadata until reviewed. Content can hide under arbitrary vendor keys; deleting six known GenAI fields is not a complete policy.
 
 Normalize error categories rather than preserving arbitrary exception text. Replace raw paths and repository identifiers with approved coarse categories or local random IDs. Avoid deterministic hashes of emails/paths: they are often guessable and still linkable.

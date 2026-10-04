@@ -13,6 +13,11 @@
 | Managed settings | [Enterprise managed settings](https://docs.github.com/en/copilot/reference/enterprise-administrators/enterprise-managed-settings) | Supported client matrix and telemetry schema |
 | SDK telemetry | [OpenTelemetry instrumentation for Copilot SDK](https://docs.github.com/en/copilot/how-tos/copilot-sdk/observability/opentelemetry) | Explicit SDK telemetry configuration and W3C trace context |
 | Desktop customization | [Customizing the Copilot app](https://docs.github.com/en/copilot/how-tos/github-copilot-app/customize-github-copilot-app) | Skills/plugins are available; not proof of telemetry environment propagation |
+| Local app/CLI history | [About Copilot session data](https://docs.github.com/en/copilot/concepts/security-governance-and-network-settings/session-data) | Shared local session directory, SQLite subset, syncing and history queries' model-data boundary |
+| On-disk layout | [CLI configuration directory](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-config-dir-reference#session-state) | `events.jsonl`, `session-store.db`, configuration root and managed-file cautions |
+| Built-in history insights | [Using CLI session data](https://docs.github.com/en/copilot/how-tos/copilot-cli/use-copilot-cli/chronicle) | `/chronicle` commands, usage insights, reindex/sync and index path |
+| Desktop history integration | [Working with app sessions](https://docs.github.com/en/copilot/how-tos/github-copilot-app/agent-sessions#using-chronicle-with-app-sessions) | App explicitly supports CLI history features such as `/chronicle` |
+| Session event semantics | [SDK streaming events reference](https://github.com/github/copilot-sdk/blob/main/docs/features/streaming-events.md) | Envelope, tool pairing, previous-event parent IDs and ephemeral usage; not a stable desktop disk-schema guarantee |
 | GenAI semantics | [Current GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai/tree/main/docs/gen-ai) | Development status and signal definitions |
 | OTel components | [Collector documentation](https://opentelemetry.io/docs/collector/) | Receive/process/export boundary, operational configuration |
 | Local backend | [Grafana Docker LGTM guide](https://grafana.com/docs/opentelemetry/docker-lgtm/) | Development-only image, endpoints, Kubernetes route and persistence guidance |
@@ -33,6 +38,8 @@
 ## Important qualifications
 
 **Desktop is not verified.** The managed settings matrix marks `telemetry` unsupported in the app. A CLI-derived local runtime may behave differently, but this needs a real app/version/surface experiment. The guide deliberately does not invent an app setting.
+
+**Local history is a documented fallback, not native OTel.** GitHub documents saved app/CLI records and `/chronicle` integration. The importer remains proposed and has not been tested against private local files. The SDK marks per-call `assistant.usage` ephemeral, so persistence and aggregation coverage cannot be assumed.
 
 **GenAI conventions are not frozen.** The current OTel page redirects readers to the new GenAI conventions repository, which marks the work Development. Runtime/schema-version fixtures are essential.
 

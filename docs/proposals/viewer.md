@@ -34,6 +34,8 @@ Unknown outcomes and incomplete capture must be prominent, not interpreted as fa
 
 SQLite is a pilot summary store, not a decision to replace an enterprise backend. Put backend queries behind a small adapter and keep the summary schema portable to OpenSearch.
 
+An additional input adapter can read [documented local session history](../guides/local-session-data.md) for desktop-first participants. Show ordered message/tool frames with a **retrospective / reconstructed** badge, source/runtime/parser versions and field coverage. Keep missing provider usage and timing unknown; deduplicate overlap with native OTel. The viewer's own summary database must remain separate from Copilot's managed `session-store.db`.
+
 ## Proposed normalized records
 
 | Record | Key and notable fields |

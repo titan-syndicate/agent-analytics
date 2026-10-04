@@ -6,7 +6,7 @@
 
 | Decision | Recommendation | Why |
 | --- | --- | --- |
-| Initial client | Copilot CLI, then a separate desktop experiment | CLI export is documented; desktop inheritance and support need proof |
+| Initial client | CLI for native OTel; local history for desktop-first users | CLI export and app history are documented; live desktop inheritance still needs proof |
 | Capture protocol | OTLP over HTTP/protobuf | Explicit compatibility across backends; do not rely on the CLI's HTTP/JSON default |
 | Backend | Local Grafana LGTM development image | One backend package for traces, metrics, logs and a web UI |
 | Orchestration | Tilt + Docker Desktop Kubernetes if already installed | Visible health, logs and localhost forwarding; no reason to add Kubernetes just for first capture |
@@ -17,6 +17,12 @@
 | First experiment | A reliable test-running or repository-navigation skill | Repeatable, measurable, relatively easy to verify |
 
 The retention values are **policy targets**, not defaults implemented by the lab image. Configure and verify expiration before retaining real telemetry beyond a short experiment.
+
+## If you primarily use the desktop app
+
+Read [local session files and SQLite](../guides/local-session-data.md). GitHub documents saved app/CLI history and built-in `/chronicle` insights, so you can start investigating tool failures and repeated attempts without live OTel. Built-in history queries may send relevant content to the model; a strict no-egress experiment needs a local deterministic reader instead.
+
+Saved history is not guaranteed to contain per-call usage or streaming timing: the SDK marks `assistant.usage` ephemeral. Keep these gaps explicit, and never treat the raw session directory as metadata-only just because OTel content export is disabled.
 
 ## What to inspect each day
 

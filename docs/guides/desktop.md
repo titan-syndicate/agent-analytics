@@ -4,6 +4,9 @@
 
 That does not prove every app-launched runtime is incapable of exporting. It does mean a supported app-wide switch should not be invented or implied. We have not executed an app-specific capture test in this project.
 
+!!! tip "You do not have to wait for live export to study app sessions"
+    GitHub documents local app/CLI session records under `~/.copilot/session-state/` and a SQLite subset in `session-store.db`. [Analyze local session files](local-session-data.md) explains the retrospective fallback, built-in `/chronicle` insights, missing ephemeral metrics, and a proposed read-only importer.
+
 ## Separate the surfaces
 
 | Surface | Current evidence | Pilot treatment |
@@ -57,7 +60,7 @@ Record outcomes as **supported by documentation**, **experimentally working on v
 
 Keep the CLI pilot usable. Ask the app maintainers for a documented per-execution-host OTel setting or environment propagation mechanism; attach a sanitized reproduction, not process dumps or session data.
 
-Do not proxy or decrypt model traffic, scrape private app databases, or automatically replace the bundled CLI. These approaches create security, correctness and maintenance problems and still do not guarantee session attribution.
+Do not proxy or decrypt model traffic, reverse-engineer undocumented app-internal databases, or automatically replace the bundled CLI. These approaches create security, correctness and maintenance problems and still do not guarantee session attribution. Read-only analysis of the **documented** local session store is a separate, useful [fallback](local-session-data.md); it is not a live telemetry switch.
 
 The Copilot SDK offers documented telemetry configuration **when we own the host application**. It is not a switch for a closed desktop application's SDK configuration.
 
