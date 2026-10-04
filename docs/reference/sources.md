@@ -57,7 +57,9 @@
 
 The [October 4 experiment](../experiments/cli-local-otel.md) now verifies the native CLI-to-local-LGTM path: synthetic read-back, two CLI tasks, model/tool spans, Prometheus metrics, and absence of known GenAI content keys. A small CLI helper is implemented; it is not the proposed packaged installer.
 
-This publication does not claim a desktop export test, Honeycomb ingestion using a real key, OpenSearch/Phoenix/Langfuse ingestion, a session-history importer, an installable skill, or tested telemetry retention.
+The [multi-viewer follow-up](../guides/viewer-comparison.md#verified-october-4-2026) verifies Phoenix/Langfuse ingestion of the same synthetic and CLI spans, including identity, parents, kinds, session/model fields, timestamps and normalized input/output token counts.
+
+This publication does not claim a desktop export test, Honeycomb ingestion using a real key, OpenSearch ingestion, a session-history importer, an installable skill, or tested telemetry retention.
 
 The docs build validates the static site's structure and internal links. It does not prove the compatibility of every external product, every code sample, or your enterprise policy.
 

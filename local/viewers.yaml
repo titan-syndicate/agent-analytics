@@ -1,0 +1,331 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: lgtm
+  namespace: agent-analytics-lab
+spec:
+  selector:
+    app: agent-analytics-lgtm
+  ports:
+    - port: 4318
+      targetPort: 4318
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: phoenix
+  namespace: agent-analytics-lab
+spec:
+  selector:
+    app: agent-analytics-phoenix
+  ports:
+    - port: 6006
+      targetPort: 6006
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phoenix
+  namespace: agent-analytics-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agent-analytics-phoenix
+  template:
+    metadata:
+      labels:
+        app: agent-analytics-phoenix
+    spec:
+      containers:
+        - name: phoenix
+          image: arizephoenix/phoenix:20.19.0@sha256:d240d8d4e364ee3483ed2de41ec12b760cc90bb0d4c6e2f190388772aba6fe1f
+          env:
+            - name: PHOENIX_PORT
+              value: "6006"
+            - name: PHOENIX_WORKING_DIR
+              value: /data
+            - name: PHOENIX_PHONE_HOME_ENABLED
+              value: "false"
+          ports:
+            - containerPort: 6006
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 6006
+            periodSeconds: 5
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 100m
+            limits:
+              memory: 2Gi
+              cpu: "2"
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          emptyDir:
+            sizeLimit: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: langfuse
+  namespace: agent-analytics-lab
+spec:
+  selector:
+    app: agent-analytics-langfuse
+  ports:
+    - port: 3000
+      targetPort: 3000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: langfuse
+  namespace: agent-analytics-lab
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: agent-analytics-langfuse
+  template:
+    metadata:
+      labels:
+        app: agent-analytics-langfuse
+    spec:
+      containers:
+        - name: web
+          image: docker.langfuse.com/langfuse/langfuse:4.50.0@sha256:3d2ae888a0e6edb41fdba6e7d5baca5e4baede3a870dac7970dadd9d925b018e
+          envFrom: &credentials
+            - secretRef:
+                name: agent-viewer-credentials
+          env: &langfuse-env
+            - name: HOSTNAME
+              value: 0.0.0.0
+            - name: NEXTAUTH_URL
+              value: http://127.0.0.1:3001
+            - name: TELEMETRY_ENABLED
+              value: "false"
+            - name: LANGFUSE_INIT_ORG_ID
+              value: local-lab
+            - name: LANGFUSE_INIT_ORG_NAME
+              value: Local lab
+            - name: LANGFUSE_INIT_PROJECT_ID
+              value: copilot
+            - name: LANGFUSE_INIT_PROJECT_NAME
+              value: Copilot comparison
+            - name: LANGFUSE_INIT_USER_NAME
+              value: Local evaluator
+            - name: CLICKHOUSE_URL
+              value: http://localhost:8123
+            - name: CLICKHOUSE_MIGRATION_URL
+              value: clickhouse://localhost:9000
+            - name: CLICKHOUSE_USER
+              value: clickhouse
+            - name: CLICKHOUSE_CLUSTER_ENABLED
+              value: "false"
+            - name: REDIS_HOST
+              value: localhost
+            - name: REDIS_TLS_ENABLED
+              value: "false"
+            - name: LANGFUSE_S3_EVENT_UPLOAD_BUCKET
+              value: langfuse
+            - name: LANGFUSE_S3_EVENT_UPLOAD_REGION
+              value: auto
+            - name: LANGFUSE_S3_EVENT_UPLOAD_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: agent-viewer-credentials
+                  key: MINIO_ROOT_USER
+            - name: LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: agent-viewer-credentials
+                  key: MINIO_ROOT_PASSWORD
+            - name: LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT
+              value: http://localhost:9002
+            - name: LANGFUSE_S3_EVENT_UPLOAD_FORCE_PATH_STYLE
+              value: "true"
+            - name: LANGFUSE_S3_EVENT_UPLOAD_PREFIX
+              value: events/
+            - name: LANGFUSE_S3_MEDIA_UPLOAD_BUCKET
+              value: langfuse
+            - name: LANGFUSE_S3_MEDIA_UPLOAD_REGION
+              value: auto
+            - name: LANGFUSE_S3_MEDIA_UPLOAD_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: agent-viewer-credentials
+                  key: MINIO_ROOT_USER
+            - name: LANGFUSE_S3_MEDIA_UPLOAD_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: agent-viewer-credentials
+                  key: MINIO_ROOT_PASSWORD
+            - name: LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT
+              value: http://127.0.0.1:9090
+            - name: LANGFUSE_S3_MEDIA_UPLOAD_INTERNAL_ENDPOINT
+              value: http://localhost:9002
+            - name: LANGFUSE_S3_MEDIA_UPLOAD_FORCE_PATH_STYLE
+              value: "true"
+            - name: LANGFUSE_S3_MEDIA_UPLOAD_PREFIX
+              value: media/
+            - name: LANGFUSE_S3_BATCH_EXPORT_ENABLED
+              value: "false"
+          ports:
+            - containerPort: 3000
+          readinessProbe:
+            httpGet:
+              path: /api/public/health
+              port: 3000
+            periodSeconds: 10
+          resources:
+            requests: {memory: 512Mi, cpu: 100m}
+            limits: {memory: 3Gi, cpu: "2"}
+        - name: worker
+          image: docker.langfuse.com/langfuse/langfuse-worker:4.50.0@sha256:52f7fd41ded2f1a6acab13ff7cb1832d36dfe2cbf44adea402b7a09cfa4ce800
+          envFrom: *credentials
+          env: *langfuse-env
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3030
+            periodSeconds: 10
+          resources:
+            requests: {memory: 256Mi, cpu: 100m}
+            limits: {memory: 2Gi, cpu: "2"}
+        - name: postgres
+          image: postgres:17.6@sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: agent-viewer-credentials, key: POSTGRES_PASSWORD}
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_DB
+              value: postgres
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres"]
+          resources:
+            requests: {memory: 128Mi, cpu: 100m}
+            limits: {memory: 512Mi, cpu: "1"}
+          volumeMounts:
+            - name: postgres
+              mountPath: /var/lib/postgresql/data
+        - name: redis
+          image: redis:7.4.5@sha256:90e7a336d044f1abc9e9dbc05d65566850896d11453bbd1dd0fb7e5059f0e8fb
+          env:
+            - name: REDIS_AUTH
+              valueFrom:
+                secretKeyRef: {name: agent-viewer-credentials, key: REDIS_AUTH}
+          command: ["redis-server"]
+          args: ["--requirepass", "$(REDIS_AUTH)", "--maxmemory-policy", "noeviction"]
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "REDISCLI_AUTH=\"$REDIS_AUTH\" redis-cli ping"]
+          resources:
+            requests: {memory: 64Mi, cpu: 50m}
+            limits: {memory: 512Mi, cpu: "1"}
+          volumeMounts:
+            - name: redis
+              mountPath: /data
+        - name: clickhouse
+          image: clickhouse/clickhouse-server:25.12@sha256:8a790dd3468db22b1d4e7b18a176f378ff5ff6053b9c48dd4ea1fa71a24c5ba6
+          env:
+            - name: CLICKHOUSE_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: agent-viewer-credentials, key: CLICKHOUSE_PASSWORD}
+            - name: CLICKHOUSE_USER
+              value: clickhouse
+            - name: CLICKHOUSE_DB
+              value: default
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: 8123
+          resources:
+            requests: {memory: 512Mi, cpu: 250m}
+            limits: {memory: 4Gi, cpu: "2"}
+          volumeMounts:
+            - name: clickhouse
+              mountPath: /var/lib/clickhouse
+            - name: clickhouse-logs
+              mountPath: /var/log/clickhouse-server
+        - name: minio
+          image: cgr.dev/chainguard/minio@sha256:4cf4831a2bbcf13ddca09c1cbcc9faff716dd3c4247e0babc32864b8ee8e0034
+          env:
+            - name: MINIO_ROOT_USER
+              valueFrom:
+                secretKeyRef: {name: agent-viewer-credentials, key: MINIO_ROOT_USER}
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: agent-viewer-credentials, key: MINIO_ROOT_PASSWORD}
+          command: ["sh", "-c"]
+          args: ['mkdir -p /data/langfuse && exec minio server --address ":9002" --console-address ":9003" /data']
+          readinessProbe:
+            httpGet:
+              path: /minio/health/ready
+              port: 9002
+          resources:
+            requests: {memory: 128Mi, cpu: 100m}
+            limits: {memory: 1Gi, cpu: "1"}
+          volumeMounts:
+            - name: minio
+              mountPath: /data
+      volumes:
+        - name: postgres
+          emptyDir: {sizeLimit: 2Gi}
+        - name: redis
+          emptyDir: {sizeLimit: 1Gi}
+        - name: clickhouse
+          emptyDir: {sizeLimit: 5Gi}
+        - name: clickhouse-logs
+          emptyDir: {sizeLimit: 1Gi}
+        - name: minio
+          emptyDir: {sizeLimit: 3Gi}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: collector
+  namespace: agent-analytics-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agent-analytics-collector
+  template:
+    metadata:
+      labels:
+        app: agent-analytics-collector
+    spec:
+      containers:
+        - name: collector
+          image: otel/opentelemetry-collector-contrib:0.153.0@sha256:93aad750175cbf1a973ae1c5886c3371f4d800f61be25cdd26870b8441ffe9fa
+          args: ["--config=/conf/collector.yaml"]
+          env:
+            - name: LANGFUSE_AUTH
+              valueFrom:
+                secretKeyRef:
+                  name: agent-viewer-credentials
+                  key: LANGFUSE_AUTH
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 13133
+          resources:
+            requests: {memory: 128Mi, cpu: 100m}
+            limits: {memory: 512Mi, cpu: "1"}
+          volumeMounts:
+            - name: config
+              mountPath: /conf
+      volumes:
+        - name: config
+          configMap:
+            name: agent-analytics-collector

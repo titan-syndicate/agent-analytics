@@ -9,7 +9,7 @@ The goal is not an individual productivity scoreboard. It is an evidence-based e
 
 Desktop-first users can start with [saved local session data](guides/local-session-data.md) instead of waiting for live export. GitHub documents both app and CLI history in the local session directory/index; retrospective analysis has different privacy boundaries and cannot recover unpersisted metrics.
 
-**The local CLI path has now been exercised:** [read the experiment result](experiments/cli-local-otel.md), then [run the checked-in Tilt lab](guides/local-lab.md). For a more agent-specific UI than Grafana, see [Phoenix and Langfuse viewer choices](proposals/agent-viewers.md).
+**The local CLI path has now been exercised:** [read the experiment result](experiments/cli-local-otel.md), then [run the checked-in Tilt lab](guides/local-lab.md). For a more agent-specific UI than Grafana, [compare Phoenix and Langfuse on the same traces](guides/viewer-comparison.md).
 
 ## Choose a reading path
 
@@ -54,7 +54,7 @@ Copilot runtime
 | Session-file importer / derived OTel spans | Proposed, not implemented |
 | One-command launcher / installable skill | Proposed, not implemented |
 | Session-oriented local web client | Proposed, not implemented |
-| Phoenix / Langfuse integration | Researched alternatives; not deployed or tested here |
+| Phoenix / Langfuse integration | Deployed together; synthetic and CLI trace fan-out verified |
 | Automated insight and experiment service | Proposed, not implemented |
 
 ## Read the evidence, not promises

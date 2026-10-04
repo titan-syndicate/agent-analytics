@@ -1,0 +1,63 @@
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 400
+    spike_limit_mib: 100
+  batch:
+    timeout: 1s
+  transform/viewers:
+    error_mode: propagate
+    trace_statements:
+      - context: span
+        statements:
+          - set(attributes["openinference.span.kind"], "AGENT") where attributes["gen_ai.operation.name"] == "invoke_agent"
+          - set(attributes["openinference.span.kind"], "LLM") where attributes["gen_ai.operation.name"] == "chat"
+          - set(attributes["openinference.span.kind"], "TOOL") where attributes["gen_ai.operation.name"] == "execute_tool"
+          - set(attributes["langfuse.observation.type"], "agent") where attributes["gen_ai.operation.name"] == "invoke_agent"
+          - set(attributes["langfuse.observation.type"], "generation") where attributes["gen_ai.operation.name"] == "chat"
+          - set(attributes["langfuse.observation.type"], "tool") where attributes["gen_ai.operation.name"] == "execute_tool"
+          - set(attributes["session.id"], attributes["gen_ai.conversation.id"]) where attributes["gen_ai.conversation.id"] != nil
+          - set(attributes["langfuse.session.id"], attributes["gen_ai.conversation.id"]) where attributes["gen_ai.conversation.id"] != nil
+          - set(attributes["llm.model_name"], attributes["gen_ai.request.model"]) where attributes["gen_ai.operation.name"] == "chat" and attributes["gen_ai.request.model"] != nil
+          - set(attributes["llm.model_name"], attributes["gen_ai.response.model"]) where attributes["gen_ai.operation.name"] == "chat" and attributes["gen_ai.response.model"] != nil
+          - set(attributes["llm.token_count.prompt"], attributes["gen_ai.usage.input_tokens"]) where attributes["gen_ai.operation.name"] == "chat" and attributes["gen_ai.usage.input_tokens"] != nil
+          - set(attributes["llm.token_count.completion"], attributes["gen_ai.usage.output_tokens"]) where attributes["gen_ai.operation.name"] == "chat" and attributes["gen_ai.usage.output_tokens"] != nil
+exporters:
+  otlp_http/lgtm:
+    endpoint: http://lgtm:4318
+  otlp_http/phoenix:
+    endpoint: http://phoenix:6006
+    headers:
+      x-project-name: copilot-lab
+  otlp_http/langfuse:
+    endpoint: http://langfuse:3000/api/public/otel
+    headers:
+      Authorization: "Basic ${env:LANGFUSE_AUTH}"
+      x-langfuse-ingestion-version: "4"
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+service:
+  extensions: [health_check]
+  pipelines:
+    traces/raw:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlp_http/lgtm]
+    traces/viewers:
+      receivers: [otlp]
+      processors: [memory_limiter, transform/viewers, batch]
+      exporters: [otlp_http/phoenix, otlp_http/langfuse]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlp_http/lgtm]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlp_http/lgtm]

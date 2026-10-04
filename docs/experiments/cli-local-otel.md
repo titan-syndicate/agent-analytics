@@ -91,7 +91,7 @@ We did not reset the cluster or edit Docker settings automatically. The [setup g
 
 An initial attempt to use `--deny-tool='*'` was rejected by the CLI's permission-rule parser before the task ran. The working task uses explicit `shell` and `write` denials instead. This is why the guide records the exercised flags rather than assuming wildcard semantics.
 
-A verification attempt immediately after the repeated tasks received HTTP 400 from a backend query. A subsequent read-back of the same stored traces/metrics passed; the rejection's cause was not established. The helper now prints the backend error body on HTTP failures rather than hiding the diagnostic. If this recurs, inspect that response and Tilt logs rather than treating failed verification as success.
+A verification attempt immediately after the repeated tasks received HTTP 400 from a backend query. During the later multi-viewer experiment, the diagnostic identified a collapsed Tempo search interval (`start == end`). The helper now searches with a 60-second lower-bound cushion and filters results by the original trace start timestamp, preserving the requested experiment window. It also prints backend error bodies rather than hiding the diagnostic. Failed verification is never treated as success.
 
 ## What this proves
 
@@ -105,7 +105,7 @@ This was a capture smoke test, not a benchmark or an efficiency study. It does n
 
 The privacy check looks for named GenAI content fields, not every potentially sensitive string. No real repository tasks were needed; a production privacy boundary still requires a reviewed allowlist.
 
-We did **not** run the desktop environment-inheritance experiment, import `~/.copilot` history, ingest into Honeycomb/OpenSearch, deploy Phoenix/Langfuse, or claim that every client exports OTLP logs. The [desktop experiment](../guides/desktop.md) remains a separate test requiring a fresh app/runtime launch.
+This initial run did **not** test desktop environment inheritance, import `~/.copilot` history, ingest into Honeycomb/OpenSearch, or claim that every client exports OTLP logs. Phoenix/Langfuse were subsequently deployed and [verified together in a follow-up](../guides/viewer-comparison.md#verified-october-4-2026). The [desktop experiment](../guides/desktop.md) remains a separate test requiring a fresh app/runtime launch.
 
 ## What to try next
 

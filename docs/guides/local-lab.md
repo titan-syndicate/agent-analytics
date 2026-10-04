@@ -2,6 +2,8 @@
 
 **The repository now includes a working local lab.** Tilt deploys a pinned Grafana LGTM image into the dedicated `agent-analytics-lab` namespace and forwards its viewer and OTLP receiver to loopback. The [October 4 CLI experiment](../experiments/cli-local-otel.md) verified synthetic ingestion, real Copilot traces, tool spans and metrics.
 
+The project now also deploys [Phoenix and Langfuse](viewer-comparison.md), with a shared Collector forwarding the same traces to all three backends. Initialize private viewer credentials before startup. The original experiment below describes the initial LGTM-only run.
+
 !!! warning "Local development only"
     Storage is ephemeral, the cluster must be trusted, and this is not a privacy enforcement gateway. Use synthetic or approved low-risk tasks with content capture off. There is no durable archive or automatic seven-day retention guarantee.
 
@@ -10,8 +12,9 @@
 ```text
 New Copilot CLI process via scripts/lab.py run
     -> HTTP/protobuf at 127.0.0.1:4318
-    -> Tilt port forward -> bundled OTel Collector
-    -> Tempo (traces), Prometheus (metrics), Loki (logs if emitted)
+    -> Tilt port forward -> shared OTel Collector
+    -> Tempo (raw traces), Phoenix + Langfuse (enriched traces)
+    -> LGTM Prometheus (metrics), Loki (logs if emitted)
 
 Browser -> 127.0.0.1:3000/explore -> Grafana
 Browser -> 127.0.0.1:10350        -> Tilt health/logs
@@ -19,7 +22,7 @@ Browser -> 127.0.0.1:10350        -> Tilt health/logs
 
 Source of truth: [Tiltfile](https://github.com/titan-syndicate/agent-analytics/blob/main/Tiltfile), [Kubernetes manifest](https://github.com/titan-syndicate/agent-analytics/blob/main/local/lgtm.yaml), and [lab helper](https://github.com/titan-syndicate/agent-analytics/blob/main/scripts/lab.py).
 
-The multi-architecture image is pinned to LGTM `0.35.0` and its immutable index digest. It runs one Pod with a 4 GiB memory limit, a 5 GiB `/data` volume cap and a separate 1 GiB `/loki` volume cap. These are lab limits, not measured enterprise capacity or a precise disk-retention policy.
+The LGTM multi-architecture image is pinned to `0.35.0` and its immutable index digest. Its Pod has a 4 GiB memory limit, a 5 GiB `/data` volume cap and a separate 1 GiB `/loki` volume cap. Phoenix, Langfuse and the shared Collector add their own resources; see the [comparison topology](viewer-comparison.md). These are lab limits, not measured enterprise capacity or a precise disk-retention policy.
 
 ## Prerequisites
 
@@ -31,12 +34,12 @@ cd agent-analytics
 python3 scripts/lab.py doctor
 ```
 
-The selected context must be `docker-desktop`. Neither Tiltfile nor the helper switches context for you. Check that ports **3000, 4318 and 10350** are free and that the lab namespace is absent or belongs to this lab; do not adopt another person's deployment.
+The selected context must be `docker-desktop`. Neither Tiltfile nor the helper switches context for you. Check that ports **3000, 3001, 4318, 6006, 9090 and 10350** are free and that the lab namespace is absent or belongs to this lab; do not adopt another person's deployment.
 
 On macOS, a useful port check is:
 
 ```sh
-lsof -nP -iTCP:3000 -iTCP:4318 -iTCP:10350 -sTCP:LISTEN
+lsof -nP -iTCP:3000 -iTCP:3001 -iTCP:4318 -iTCP:6006 -iTCP:9090 -iTCP:10350 -sTCP:LISTEN
 ```
 
 The helper reports versions, Docker connectivity and node status. It does not install dependencies, configure authentication, or claim that the image-store compatibility check has passed; Tilt checks that at startup.
@@ -64,6 +67,7 @@ docker info --format '{{json .DriverStatus}}'
 From the repository root:
 
 ```sh
+python3 scripts/viewer_setup.py
 tilt up --host 127.0.0.1 --stream
 ```
 
@@ -166,7 +170,7 @@ gen_ai_client_operation_duration_seconds_count{service_name="github-copilot-loca
 
 These are translated Prometheus names. Discover current labels and dimensions before aggregating; a counter reset or parent/child overlap can invalidate a naive total. Exact names differ across runtime/backends.
 
-Grafana is a generic diagnostic viewer. For agent-specific conversations, frames and evaluations, read [Phoenix, Langfuse and other viewer choices](../proposals/agent-viewers.md). Those alternatives are evaluated on paper here, not deployed with this Tiltfile.
+Grafana is a generic diagnostic viewer. For agent-specific viewing, open [Phoenix and Langfuse](viewer-comparison.md), now deployed alongside it. The [viewer comparison](../proposals/agent-viewers.md) describes their tradeoffs.
 
 ## Stop and remove
 

@@ -74,6 +74,15 @@ class LabTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "Prometheus query failed"):
                 lab.recent_metrics(100)
 
+    def test_search_window_cushion_does_not_admit_older_traces(self):
+        old = {"traceID": "old", "startTimeUnixNano": "99000000000"}
+        recent = {"traceID": "recent", "startTimeUnixNano": "101000000000"}
+        with patch.object(lab, "proxy", return_value={"traces": [old, recent]}) as proxy, \
+                patch.object(lab.time, "time", return_value=102):
+            self.assertEqual(lab.recent_traces(100), [recent])
+        self.assertEqual(proxy.call_args[0][2]["start"], 40)
+        self.assertEqual(proxy.call_args[0][2]["end"], 102)
+
     def test_remote_export_cannot_be_enabled_by_wrapper_arguments(self):
         with patch.object(lab.shutil, "which", return_value="/synthetic/copilot"):
             with self.assertRaisesRegex(RuntimeError, "disables session syncing"):

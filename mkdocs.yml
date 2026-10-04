@@ -64,6 +64,7 @@ nav:
   - Setup guides:
       - Local capture with Copilot CLI: guides/copilot-cli.md
       - Tilt + Docker Kubernetes lab: guides/local-lab.md
+      - Compare Phoenix and Langfuse: guides/viewer-comparison.md
       - Copilot desktop compatibility: guides/desktop.md
       - Local session files and SQLite: guides/local-session-data.md
       - Honeycomb and Agent Timeline: guides/honeycomb.md

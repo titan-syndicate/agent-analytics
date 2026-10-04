@@ -194,18 +194,26 @@ def run_copilot(args):
     os.execvpe("copilot", ["copilot", "--no-remote-export", *args], local_environment(os.environ))
 
 
+def recent_traces(since):
+    # Tempo can reject very short search windows during recent-block sharding.
+    result = proxy("tempo", "api/search", {
+        "q": '{ resource.service.name = "' + SERVICE + '" }',
+        "start": max(0, since - 60),
+        "end": int(time.time()),
+        "limit": 100,
+    })
+    return [
+        item for item in result.get("traces", [])
+        if int(item["startTimeUnixNano"]) >= since * 1_000_000_000
+    ]
+
+
 def verify_copilot(since, timeout, expected_traces):
     require_health()
     seen = {}
 
     def traces_ready():
-        result = proxy("tempo", "api/search", {
-            "q": '{ resource.service.name = "' + SERVICE + '" }',
-            "start": since,
-            "end": int(time.time()) + 1,
-            "limit": 100,
-        })
-        for item in result.get("traces", []):
+        for item in recent_traces(since):
             trace_id = item["traceID"]
             trace = proxy("tempo", f"api/traces/{trace_id}")
             if content_keys(trace):
@@ -266,7 +274,7 @@ def doctor():
     subprocess.run(["kubectl", "--context", context, "get", "nodes"], check=True)
     for tool in ("tilt", "copilot"):
         subprocess.run([tool, "version"], check=True)
-    print("Prerequisites ready. Check ports 3000, 4318 and 10350 before starting Tilt.")
+    print("Prerequisites ready. Check ports 3000, 3001, 4318, 6006, 9090 and 10350 before Tilt.")
 
 
 def main():

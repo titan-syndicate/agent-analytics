@@ -2,7 +2,7 @@
 
 **Recommendation: evaluate Phoenix first for a lightweight local agent view, and Langfuse when the evaluation/experiment workflow becomes the priority.** Keep Grafana's Prometheus backend for numeric telemetry. These products focus largely on enriched traces and derived analytics; they do not automatically replace every OTLP metrics pipeline.
 
-This is a researched comparison, not a tested Copilot integration. The repository's current Tilt deployment runs **Grafana LGTM only**.
+The repository's Tilt deployment now runs **Grafana, Phoenix and Langfuse** with shared trace fan-out. Follow the [local comparison guide](../guides/viewer-comparison.md). The feature comparison below remains a research guide, not proof that every Copilot field/evaluation feature works.
 
 ## The main choices
 
@@ -29,7 +29,7 @@ Copilot execute_tool -> OpenInference TOOL
 conversation ID      -> verified session identity mapping
 ```
 
-This is a mapping plan, **not a validated configuration**. Preserve original fields, subagent identity, timestamps and missing-data state. Verify whether the same conversation spans multiple traces and whether tool spans need ancestor-based enrichment.
+The checked-in Collector implements this operation/session mapping when source attributes are present. Preserve original fields, subagent identity, timestamps and missing-data state. Verify whether the same conversation spans multiple traces and whether tool spans need ancestor-based enrichment.
 
 ## Langfuse: strong fit for the improvement loop
 
@@ -39,22 +39,22 @@ The mapping docs list session fields such as `langfuse.session.id` / `session.id
 
 Its [self-hosted Compose guide](https://langfuse.com/self-hosting/deployment/docker-compose) gives the deployment path, but Langfuse needs more infrastructure and secrets than the minimal local Phoenix trial. It is worth that investment when scored outcomes, datasets, prompt/version comparison and ongoing experiments are actively used.
 
-Langfuse's UI commonly uses port 3000, already occupied by Grafana here. Any future side-by-side deployment must choose a distinct loopback port and explicit trace routing. Do not point Copilot's metrics exporter at a trace-only endpoint.
+Langfuse's UI commonly uses port 3000, already occupied by Grafana here. Our side-by-side deployment forwards it to loopback port **3001** and uses explicit trace routing. Do not point Copilot's metrics exporter at a trace-only endpoint.
 
 ## Preserve the current collection boundary
 
-A future optional viewer deployment can route the same structural traces locally:
+The current deployment routes the same structural traces locally:
 
 ```text
 Copilot -> local Collector
     -> Tempo / Grafana for raw diagnostics
-    -> mapping/enrichment -> Phoenix OR Langfuse for agent views
+    -> mapping/enrichment -> Phoenix AND Langfuse for agent views
     -> Prometheus for numeric metrics
 ```
 
 Do not instrument model calls twice merely to populate another UI. Use a Collector branch with tested semantics and keep usage attribution consistent. More destinations mean more storage copies and deletion obligations, even locally.
 
-Content-off traces can still give operation kind, timing, model and token details. Prompt/response frames will remain empty unless content is deliberately captured. Test rich message rendering with **synthetic content only**; neither viewer justifies broad real-context capture.
+Content-off traces can still give operation kind, timing, model and token details. Actual prompt/response text is absent; Phoenix may display a metadata-only response envelope. Test rich message rendering with **synthetic content only**; neither viewer justifies broad real-context capture.
 
 ## The shortest useful evaluation
 
@@ -67,6 +67,6 @@ Send the same sanitized fixtures to each candidate, then answer:
 5. Can a participant label an outcome and compare a pinned tooling change?
 6. Can we disable content, prevent unapproved egress and delete all copies?
 
-Measure the time to diagnose an actual retry loop, not just how attractive the waterfall looks. Start with Phoenix's smaller local trial; choose Langfuse if its broader evaluation workflow is the value you need. Neither has been exercised by the current CLI-to-LGTM experiment.
+Measure the time to diagnose an actual retry loop, not just how attractive the waterfall looks. Use the shared local lab to compare both; choose Langfuse if its broader evaluation workflow is the value you need. The earlier CLI-to-LGTM experiment is historical evidence, not a full viewer benchmark.
 
 **Next:** [Session viewer proposal](viewer.md) defines our desired workflow regardless of product.

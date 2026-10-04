@@ -14,8 +14,9 @@ enterprise improvement loop.
 
 This repository contains the reader and a **local development lab**, not an
 enterprise telemetry product. The lab captures native Copilot CLI telemetry in
-Grafana LGTM. The session-file importer, installable skill, policy gateway and
-agent-specific viewer remain proposals. No real session content or credentials
+Grafana LGTM, Phoenix and Langfuse through a shared Collector. The session-file
+importer, installable skill, policy gateway and custom viewer remain proposals.
+No real session content or credentials
 belong here.
 
 ## Run the local OTel lab
@@ -26,11 +27,18 @@ must be `docker-desktop`; no script switches it automatically.
 
 ```sh
 python3 scripts/lab.py doctor
+python3 scripts/viewer_setup.py
 tilt up --host 127.0.0.1 --stream
 ```
 
 Leave Tilt running. Open **[Grafana](http://127.0.0.1:3000/explore)** for traces
-and metrics, or **[Tilt](http://127.0.0.1:10350)** for deployment health/logs.
+and metrics, **[Phoenix](http://127.0.0.1:6006)** or
+**[Langfuse](http://127.0.0.1:3001)** for agent views,
+or **[Tilt](http://127.0.0.1:10350)** for deployment health/logs.
+Langfuse login credentials are generated in the private, gitignored
+`.local-lab/credentials.json`. Read the
+[comparison guide](https://titan-syndicate.github.io/agent-analytics/guides/viewer-comparison/)
+for deployment resources, mapping details and cleanup.
 Anonymous access is limited to Grafana's Viewer role. Keep the cluster trusted:
 loopback forwarding does not prevent other cluster workloads reaching the Pod.
 
@@ -56,7 +64,7 @@ For a repeatable two-task/tool/metrics check, follow the
 [local lab guide](https://titan-syndicate.github.io/agent-analytics/guides/local-lab/).
 Read the [verified experiment result](https://titan-syndicate.github.io/agent-analytics/experiments/cli-local-otel/)
 and [agent-focused viewer options](https://titan-syndicate.github.io/agent-analytics/proposals/agent-viewers/).
-The image is pinned to a multi-architecture digest; telemetry storage is
+Images are pinned to multi-architecture digests; telemetry storage is
 ephemeral and lost on Pod replacement or `tilt down`. This is not a durable
 archive, privacy sanitizer, or retention implementation.
 
