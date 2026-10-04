@@ -2,6 +2,8 @@
 
 **Status: proposed, not implemented.** Use Grafana for the first diagnostic sessions, then build the smallest read-only conversation view that makes improvement decisions easier. Do not attempt to recreate all of Honeycomb.
 
+Grafana is now running in the [checked-in Tilt lab](../guides/local-lab.md). Before implementing our own UI, evaluate [Phoenix and Langfuse](agent-viewers.md) against the same safe fixtures; either may supply enough agent-oriented viewing/evaluation capability with less custom work.
+
 ## What makes an agent viewer different?
 
 A generic trace waterfall answers “what happened inside this request?” Our user asks “how did this engineering task progress across model calls, tools, subagents and human turns?”

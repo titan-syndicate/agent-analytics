@@ -23,6 +23,10 @@
 | Local backend | [Grafana Docker LGTM guide](https://grafana.com/docs/opentelemetry/docker-lgtm/) | Development-only image, endpoints, Kubernetes route and persistence guidance |
 | LGTM Kubernetes | [Upstream Kubernetes manifest](https://github.com/grafana/docker-otel-lgtm/blob/main/k8s/lgtm.yaml) | Readiness and example deployment shape |
 | Tilt API | [Tiltfile API](https://docs.tilt.dev/api.html) | Kubernetes resources, loopback forwarding and context checks |
+| Phoenix deployment | [Self-hosting Phoenix](https://arize.com/docs/phoenix/self-hosting) | Local deployment, storage choices and evaluation capabilities |
+| Phoenix semantics | [OpenInference best practices](https://arize.com/docs/phoenix/cookbook/tracing/openinference-best-practices) | AI-aware operation kinds/session semantics; mapping must be tested for Copilot |
+| Langfuse ingest | [Native OpenTelemetry integration](https://langfuse.com/integrations/native/opentelemetry) | HTTP protocols, GenAI mapping, session fields, v4 ingestion header |
+| Langfuse deployment | [Self-hosted Docker Compose](https://langfuse.com/self-hosting/deployment/docker-compose) | Local infrastructure requirements and initialization |
 | Honeycomb ingest | [Send data with the Collector](https://docs.honeycomb.io/send-data/opentelemetry/collector) | OTLP protocols, region endpoints, headers and metrics dataset requirement |
 | Honeycomb agent semantics | [Instrumenting AI agents](https://docs.honeycomb.io/send-data/use-cases/agents) | Conversation, agent, operation, usage and optional context fields |
 | Honeycomb UI | [Agent Timeline](https://docs.honeycomb.io/investigate/observe/agent-timeline) | Conversation navigation, frames, unknown agents and early-access insights |
@@ -51,7 +55,9 @@
 
 ## What has not been validated here
 
-This publication does not claim a live Copilot-to-LGTM test, a desktop export test, Honeycomb ingestion using a real key, OpenSearch ingestion, a functioning launcher/skill, or tested telemetry retention.
+The [October 4 experiment](../experiments/cli-local-otel.md) now verifies the native CLI-to-local-LGTM path: synthetic read-back, two CLI tasks, model/tool spans, Prometheus metrics, and absence of known GenAI content keys. A small CLI helper is implemented; it is not the proposed packaged installer.
+
+This publication does not claim a desktop export test, Honeycomb ingestion using a real key, OpenSearch/Phoenix/Langfuse ingestion, a session-history importer, an installable skill, or tested telemetry retention.
 
 The docs build validates the static site's structure and internal links. It does not prove the compatibility of every external product, every code sample, or your enterprise policy.
 

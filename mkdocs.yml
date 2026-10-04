@@ -70,7 +70,10 @@ nav:
   - Proposals:
       - Local capture and distribution: proposals/capture.md
       - Session viewer and analysis: proposals/viewer.md
+      - Agent-focused viewer choices: proposals/agent-viewers.md
       - Honeycomb vs local vs OpenSearch: proposals/backends.md
+  - Experiments:
+      - CLI capture with Tilt + Grafana: experiments/cli-local-otel.md
   - Insights and improvement:
       - Useful insights and their limits: insights/catalog.md
       - The improvement loop: insights/improvement-loop.md

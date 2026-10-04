@@ -9,6 +9,8 @@ The goal is not an individual productivity scoreboard. It is an evidence-based e
 
 Desktop-first users can start with [saved local session data](guides/local-session-data.md) instead of waiting for live export. GitHub documents both app and CLI history in the local session directory/index; retrospective analysis has different privacy boundaries and cannot recover unpersisted metrics.
 
+**The local CLI path has now been exercised:** [read the experiment result](experiments/cli-local-otel.md), then [run the checked-in Tilt lab](guides/local-lab.md). For a more agent-specific UI than Grafana, see [Phoenix and Langfuse viewer choices](proposals/agent-viewers.md).
+
 ## Choose a reading path
 
 | Your question | Start here | Then read |
@@ -44,13 +46,15 @@ Copilot runtime
 | --- | --- |
 | Navigable MkDocs site and GitHub Pages publication | Implemented |
 | Copilot CLI OTel configuration | Documented upstream capability; setup guide |
-| Local LGTM with Tilt | Illustrative lab recipe, not a deployed or packaged service |
+| Local LGTM with Tilt | Implemented development lab; CLI end-to-end capture verified |
+| CLI lab helper / smoke verification | Implemented; not a packaged enterprise installer |
 | Honeycomb Agent Timeline | Documented upstream capability; setup guide |
 | Desktop OTel capture | Unverified; managed telemetry support is explicitly limited upstream |
 | Local app/CLI history and `/chronicle` | Documented upstream capability; retrospective analysis guide |
 | Session-file importer / derived OTel spans | Proposed, not implemented |
 | One-command launcher / installable skill | Proposed, not implemented |
 | Session-oriented local web client | Proposed, not implemented |
+| Phoenix / Langfuse integration | Researched alternatives; not deployed or tested here |
 | Automated insight and experiment service | Proposed, not implemented |
 
 ## Read the evidence, not promises

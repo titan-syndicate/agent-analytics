@@ -14,6 +14,8 @@
 
 Moving storage to OpenSearch does not require abandoning OTel. Keeping a local viewer does not require a laptop-sized copy of the enterprise backend.
 
+For local agent-specific presentation rather than generic trace waterfalls, [Phoenix and Langfuse](agent-viewers.md) are additional candidates. Their trace/agent analytics do not automatically replace the Prometheus metrics path; verify Copilot semantics before treating OTLP acceptance as full UI compatibility.
+
 ## Decision matrix
 
 | Concern | Local LGTM + summaries | Honeycomb | OpenSearch + Data Prepper/Dashboards |

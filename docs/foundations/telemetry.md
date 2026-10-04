@@ -73,6 +73,8 @@ It is still the **exported representation**, not guaranteed access to hidden rea
 
 GenAI conventions are still marked **Development** in the [current upstream repository](https://github.com/open-telemetry/semantic-conventions-genai/tree/main/docs/gen-ai). Keep sanitized fixtures by runtime version, preserve raw field names, and version our normalization separately. Do not silently turn a missing field into zero or “success.”
 
+In the [CLI 1.0.91 experiment](../experiments/cli-local-otel.md), the client emitted `gen_ai.client.inference.usage.*` counters and `gen_ai.client.inference.operation.*` token histograms, rather than relying on the earlier documented `gen_ai.client.token.usage` family. Discover actual emitted metric names and keep version provenance before building dashboards.
+
 ## When live export is unavailable
 
 [Local app/CLI session files and SQLite](../guides/local-session-data.md) provide a documented retrospective input. They can support tool sequence/failure analysis and derived elapsed-time spans, but are not OTLP records. Some SDK events, including per-call `assistant.usage`, are ephemeral; saved history cannot recreate absent measurements. Keep native and derived provenance separate.

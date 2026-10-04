@@ -19,7 +19,16 @@ The CLI's version matters more than the app icon you launched it from. If the mo
 
 ## 2. Set a deliberate local environment
 
-In a fresh terminal, remove conflicting telemetry settings **in that terminal only**, then set the local target:
+For this repository's lab, prefer the implemented wrapper:
+
+```sh
+python3 scripts/lab.py run -- \
+  -p "Reply with exactly: local telemetry ready. Do not use tools."
+```
+
+It clears all inherited `OTEL_*` / `COPILOT_OTEL_*` overrides for the child process, including endpoint headers and TLS settings, while preserving authentication. It disables message-content capture and session syncing without editing your shell. See the [repeatable experiment](local-lab.md#repeat-the-two-task-experiment) and [observed result](../experiments/cli-local-otel.md).
+
+For manual setup, start a terminal without other telemetry customization. The following clears common conflicts **in that terminal only**, but is not an exhaustive reset of all exporter variables; inherited TLS settings can also prevent plaintext local export.
 
 ```sh
 unset COPILOT_OTEL_FILE_EXPORTER_PATH
@@ -36,7 +45,7 @@ export OTEL_SERVICE_NAME=github-copilot-local
 export OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=local,agent_analytics.client_surface=cli
 export OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=false
 
-copilot
+copilot --no-remote-export
 ```
 
 `agent_analytics.client_surface` is our **custom pilot attribute**, not an upstream standard. Do not add your name, email, home path or repository URL to resource attributes.
@@ -88,7 +97,7 @@ env -u OTEL_EXPORTER_OTLP_ENDPOINT \
   COPILOT_OTEL_EXPORTER_TYPE=file \
   COPILOT_OTEL_FILE_EXPORTER_PATH="$HOME/.local/state/agent-analytics/cli-smoke.jsonl" \
   OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=false \
-  copilot
+  copilot --no-remote-export
 ```
 
 Treat the file as private telemetry. The format is the CLI's JSON-lines representation, not a guaranteed drop-in OTLP replay file. Inspect it locally; do not commit it or upload it for troubleshooting. Delete the exact file after the diagnosis:

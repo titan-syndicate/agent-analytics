@@ -2,6 +2,8 @@
 
 **Status: proposed, not implemented.** Build a small local “agent analytics” launcher around OTLP and a reviewed collection boundary. Tilt is one deployment adapter, not the product's interface and not a requirement for every engineer.
 
+The first development slice now exists as [Tilt plus `scripts/lab.py`](../guides/local-lab.md), with [verified CLI capture](../experiments/cli-local-otel.md). The packaged command below, privacy gateway, distribution skill, durable retention and desktop adapter remain proposals.
+
 ## Decision and rationale
 
 Keep the client-to-collector contract vendor-neutral. Separate three concerns: starting services, enabling a particular runtime, and deciding what may be retained/exported. This avoids treating “Tilt is running” as “desktop capture works.”

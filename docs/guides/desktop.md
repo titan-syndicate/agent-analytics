@@ -23,6 +23,8 @@ The current [app customization guide](https://docs.github.com/en/copilot/how-tos
 
 ## A controlled local experiment
 
+The [checked-in Tilt lab](local-lab.md) now supplies the backend and synthetic read-back check. The remaining app-specific setup is a full quit, launch with the verified environment, and a new session; this is not a no-restart change. Quitting the app may interrupt other active sessions, so schedule that step deliberately. The [CLI experiment](../experiments/cli-local-otel.md) does not validate desktop inheritance.
+
 1. Record the desktop version, session surface, execution host, and bundled CLI/runtime version if available. Use a new safe project session, not the session carrying your production work.
 2. Bring up the [synthetic-tested local backend](local-lab.md).
 3. Fully quit the desktop app through its normal quit flow. Do not terminate unrelated Copilot processes. Existing app instances may reuse their previous environment.
