@@ -20,17 +20,19 @@ theme:
     - content.code.copy
   palette:
     - scheme: default
-      primary: indigo
+      primary: custom
       accent: teal
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     - scheme: slate
-      primary: indigo
+      primary: custom
       accent: teal
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
+extra_css:
+  - stylesheets/rainbow.css
 plugins:
   - search
 markdown_extensions:

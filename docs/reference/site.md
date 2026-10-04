@@ -2,6 +2,8 @@
 
 This site uses MkDocs with Material, explicit navigation and search. All published content lives under `docs/`; `mkdocs.yml` defines its reading order. No telemetry collector or live session dashboard is part of GitHub Pages.
 
+The theme uses neutral navigation, teal links, and restrained rainbow accents in `docs/stylesheets/rainbow.css`. Light and dark modes keep normal reading text solid; forced-color mode restores system colors.
+
 ## Preview locally
 
 Use Python 3.10+; CI uses 3.12:
