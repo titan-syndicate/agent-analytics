@@ -1,0 +1,79 @@
+site_name: Agent Analytics
+site_description: A local-first field guide to observing and improving AI-assisted engineering.
+site_url: https://titan-syndicate.github.io/agent-analytics/
+repo_url: https://github.com/titan-syndicate/agent-analytics
+repo_name: titan-syndicate/agent-analytics
+edit_uri: edit/main/docs/
+theme:
+  name: material
+  language: en
+  font: false
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+plugins:
+  - search
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+validation:
+  nav:
+    omitted_files: warn
+  links:
+    not_found: warn
+    anchors: warn
+    unrecognized_links: warn
+nav:
+  - Start here:
+      - Reading guide: index.md
+      - Recommendations for high-volume users: start/recommendations.md
+      - First 30 days: start/pilot.md
+  - Foundations:
+      - What to call this practice: foundations/practice.md
+      - What Copilot telemetry can tell us: foundations/telemetry.md
+  - Setup guides:
+      - Local capture with Copilot CLI: guides/copilot-cli.md
+      - Tilt + Docker Kubernetes lab: guides/local-lab.md
+      - Copilot desktop compatibility: guides/desktop.md
+      - Honeycomb and Agent Timeline: guides/honeycomb.md
+  - Proposals:
+      - Local capture and distribution: proposals/capture.md
+      - Session viewer and analysis: proposals/viewer.md
+      - Honeycomb vs local vs OpenSearch: proposals/backends.md
+  - Insights and improvement:
+      - Useful insights and their limits: insights/catalog.md
+      - The improvement loop: insights/improvement-loop.md
+  - Enterprise:
+      - Privacy and trust: enterprise/privacy.md
+      - Path to 1,000+ engineers: enterprise/scaling.md
+  - Reference:
+      - Sources and verification: reference/sources.md
+      - Maintaining this site: reference/site.md
