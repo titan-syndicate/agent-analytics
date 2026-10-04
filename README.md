@@ -54,6 +54,37 @@ capture off, and session syncing off. It clears inherited OTel overrides **for
 that child only**, preserves authentication, and does not configure desktop
 sessions. Enterprise-managed telemetry policy can still override local settings.
 
+**Plain `copilot` is not globally configured by this lab.** Use
+`python3 scripts/lab.py run` for a new instrumented interactive session, or
+`python3 scripts/lab.py run -- -p "..."` for each one-shot. Existing CLI/app
+processes are not retroactively instrumented.
+
+## Generate data and use the viewers
+
+Follow **[Generate CLI data and find it](https://titan-syndicate.github.io/agent-analytics/guides/generate-and-find-data/)**
+for a copyable series of six safe one-shots, stored-data verification, and
+step-by-step navigation in all three viewers. Start with one pair to limit quota
+usage. `python3 scripts/viewers.py smoke` checks all three stores without a model
+call, but does not generate native CLI metrics.
+
+Grafana's bundled **JVM Overview** and **RED Metrics** dashboards are not Copilot
+dashboards; empty panels there are expected. Use **Explore -> Tempo** for traces
+and **Explore -> Prometheus** for metrics. After a short-lived CLI exits, an
+Instant query at now can be empty even though historical samples remain.
+Use a Range query covering the run, or this historical presence check:
+
+```promql
+last_over_time(gen_ai_client_inference_usage_input_tokens_total{service_name="github-copilot-local"}[1h])
+```
+
+This is the latest value per series, **not total usage across a batch**. Separate
+CLI processes may reset the same series; use model-call spans for small-run
+attribution rather than summing cumulative counter samples.
+
+In Phoenix select **copilot-lab**; in Langfuse select **Local lab -> Copilot
+comparison**. Use the run's time range and compare trace IDs from the verifier.
+Actual prompt/response text is intentionally absent with content capture off.
+
 Use **Explore -> Tempo** and search:
 
 ```text

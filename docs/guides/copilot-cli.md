@@ -28,6 +28,8 @@ python3 scripts/lab.py run -- \
 
 It clears all inherited `OTEL_*` / `COPILOT_OTEL_*` overrides for the child process, including endpoint headers and TLS settings, while preserving authentication. It disables message-content capture and session syncing without editing your shell. See the [repeatable experiment](local-lab.md#repeat-the-two-task-experiment) and [observed result](../experiments/cli-local-otel.md).
 
+Run `python3 scripts/lab.py run` without `-p` for a new instrumented interactive session. **Starting Tilt does not globally configure plain `copilot` or change already-running processes.** For a series of one-shots and instructions on finding their data in Grafana/Phoenix/Langfuse, use [Generate CLI data and find it](generate-and-find-data.md).
+
 For manual setup, start a terminal without other telemetry customization. The following clears common conflicts **in that terminal only**, but is not an exhaustive reset of all exporter variables; inherited TLS settings can also prevent plaintext local export.
 
 ```sh

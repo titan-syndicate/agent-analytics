@@ -142,6 +142,8 @@ The helper checks a defined set of GenAI content keys, **not all potentially sen
 
 ## Use the web viewer
 
+**Seeing little data on JVM/RED dashboards?** Those bundled dashboards do not target Copilot metrics. See [Generate CLI data and find it](generate-and-find-data.md#grafana-why-the-bundled-dashboards-are-empty) for suitable queries, short-lived metric lookback, a six-one-shot series, and Phoenix/Langfuse navigation. Starting Tilt does not globally configure plain `copilot`; launch each captured process through the wrapper.
+
 ### Traces
 
 In Grafana **Explore -> Tempo**, use TraceQL:
@@ -169,6 +171,8 @@ gen_ai_client_operation_duration_seconds_count{service_name="github-copilot-loca
 ```
 
 These are translated Prometheus names. Discover current labels and dimensions before aggregating; a counter reset or parent/child overlap can invalidate a naive total. Exact names differ across runtime/backends.
+
+Use **Range** query mode covering the run for exited CLI processes. A bare Instant query can be empty after the normal lookback expires; `last_over_time(...[1h])` can confirm historical samples. It is not a total across separate CLI processes; see the [one-shot metrics caveats](generate-and-find-data.md#find-metrics-from-exited-one-shots).
 
 Grafana is a generic diagnostic viewer. For agent-specific viewing, open [Phoenix and Langfuse](viewer-comparison.md), now deployed alongside it. The [viewer comparison](../proposals/agent-viewers.md) describes their tradeoffs.
 

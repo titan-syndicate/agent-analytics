@@ -54,6 +54,8 @@ Each exporter has its own retry queue. This is not an atomic three-database tran
 
 ## Run the comparison
 
+For CLI launch configuration, a series of one-shots, viewer navigation and blank Grafana dashboard diagnosis, follow **[Generate CLI data and find it](generate-and-find-data.md)**.
+
 First verify a fresh three-span synthetic trace in **all three stores**, including matching span IDs, operation kinds and parent relationships:
 
 ```sh

@@ -11,6 +11,8 @@ Desktop-first users can start with [saved local session data](guides/local-sessi
 
 **The local CLI path has now been exercised:** [read the experiment result](experiments/cli-local-otel.md), then [run the checked-in Tilt lab](guides/local-lab.md). For a more agent-specific UI than Grafana, [compare Phoenix and Langfuse on the same traces](guides/viewer-comparison.md).
 
+**Ready to generate and inspect data?** [Run a series of CLI one-shots and find the results](guides/generate-and-find-data.md), including why Grafana's bundled dashboards are empty and how to query metrics after a CLI exits. Capture requires the launcher; Tilt alone does not globally instrument `copilot`.
+
 ## Choose a reading path
 
 | Your question | Start here | Then read |
