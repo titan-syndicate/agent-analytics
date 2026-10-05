@@ -2,6 +2,7 @@
 
 **Result: passed on October 4, 2026.** We deployed this repository's Tilt lab, ran two synthetic Copilot CLI one-shots, and read their traces and metrics back from local storage. The viewer is **[Grafana Explore on this machine](http://127.0.0.1:3000/explore)** while Tilt is running.
 
+**October 5 update:** The original helpers were Python; the current commands below refer to their Bash replacements. The replacement launcher and storage checks were exercised with the same two safe CLI tasks. Reasoning/output and cache/input categories were normalized during read-back. See [the synthetic cost-driver demo](../insights/demo.md) for a guided viewer tour without paid model calls.
 The link is a loopback address, not an internet-hosted viewer. Other readers must start their own lab. GitHub Pages publishes this sanitized experiment report, **not telemetry or session content**.
 
 ## Tested configuration
@@ -34,7 +35,7 @@ After that configuration change replaced the ephemeral Pod, we repeated the same
 
 ## What we ran
 
-First, `scripts/lab.py smoke` submitted a fresh synthetic trace to the receiver and read the stored span back from Tempo through Grafana. This checked storage visibility, not just an HTTP success.
+First, `scripts/lab.sh smoke` submitted a fresh synthetic trace to the receiver and read the stored span back from Tempo through Grafana. This checked storage visibility, not just an HTTP success.
 
 Then we ran two non-sensitive one-shots in an otherwise empty scratch directory:
 
@@ -49,7 +50,7 @@ The [lab guide](../guides/local-lab.md#repeat-the-two-task-experiment) contains 
 
 ## Evidence read back from the backend
 
-`scripts/lab.py verify-copilot` searched the experiment's time window and service, then retrieved the complete matching traces and metric samples:
+`scripts/lab.sh verify-copilot` searched the experiment's time window and service, then retrieved the complete matching traces and metric samples:
 
 | Check | Observation |
 | --- | --- |

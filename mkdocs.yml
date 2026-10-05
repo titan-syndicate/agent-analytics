@@ -58,6 +58,12 @@ nav:
       - Reading guide: index.md
       - Recommendations for high-volume users: start/recommendations.md
       - First 30 days: start/pilot.md
+  - Costs and improvement:
+      - Start with our cost objective: insights/cost-objective.md
+      - Hands-on cost demo: insights/demo.md
+      - Spot usage patterns: insights/catalog.md
+      - Make one change and compare: insights/improvement-loop.md
+      - Agent analysis prompts and MCP: insights/agent-analysis.md
   - Foundations:
       - What to call this practice: foundations/practice.md
       - What Copilot telemetry can tell us: foundations/telemetry.md
@@ -76,12 +82,10 @@ nav:
       - Honeycomb vs local vs OpenSearch: proposals/backends.md
   - Experiments:
       - CLI capture with Tilt + Grafana: experiments/cli-local-otel.md
-  - Insights and improvement:
-      - Useful insights and their limits: insights/catalog.md
-      - The improvement loop: insights/improvement-loop.md
   - Enterprise:
       - Privacy and trust: enterprise/privacy.md
       - Path to 1,000+ engineers: enterprise/scaling.md
   - Reference:
+      - Cost techniques and reading digest: reference/cost-research.md
       - Sources and verification: reference/sources.md
       - Maintaining this site: reference/site.md

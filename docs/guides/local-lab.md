@@ -10,7 +10,7 @@ The project now also deploys [Phoenix and Langfuse](viewer-comparison.md), with 
 ## What runs?
 
 ```text
-New Copilot CLI process via scripts/lab.py run
+New Copilot CLI process via scripts/lab.sh run
     -> HTTP/protobuf at 127.0.0.1:4318
     -> Tilt port forward -> shared OTel Collector
     -> Tempo (raw traces), Phoenix + Langfuse (enriched traces)
@@ -20,18 +20,18 @@ Browser -> 127.0.0.1:3000/explore -> Grafana
 Browser -> 127.0.0.1:10350        -> Tilt health/logs
 ```
 
-Source of truth: [Tiltfile](https://github.com/titan-syndicate/agent-analytics/blob/main/Tiltfile), [Kubernetes manifest](https://github.com/titan-syndicate/agent-analytics/blob/main/local/lgtm.yaml), and [lab helper](https://github.com/titan-syndicate/agent-analytics/blob/main/scripts/lab.py).
+Source of truth: [Tiltfile](https://github.com/titan-syndicate/agent-analytics/blob/main/Tiltfile), [Kubernetes manifest](https://github.com/titan-syndicate/agent-analytics/blob/main/local/lgtm.yaml), and [lab helper](https://github.com/titan-syndicate/agent-analytics/blob/main/scripts/lab.sh).
 
 The LGTM multi-architecture image is pinned to `0.35.0` and its immutable index digest. Its Pod has a 4 GiB memory limit, a 5 GiB `/data` volume cap and a separate 1 GiB `/loki` volume cap. Phoenix, Langfuse and the shared Collector add their own resources; see the [comparison topology](viewer-comparison.md). These are lab limits, not measured enterprise capacity or a precise disk-retention policy.
 
 ## Prerequisites
 
-Install Python 3.9+, Docker Desktop, `kubectl`, Tilt, and an authenticated Copilot CLI. Enable Docker Desktop Kubernetes. Work from a checkout of this repository:
+Install Bash 3.2+, jq, curl, OpenSSL, Docker Desktop, `kubectl`, Tilt, and an authenticated Copilot CLI. Enable Docker Desktop Kubernetes. Work from a checkout of this repository:
 
 ```sh
 git clone https://github.com/titan-syndicate/agent-analytics.git
 cd agent-analytics
-python3 scripts/lab.py doctor
+bash scripts/lab.sh doctor
 ```
 
 The selected context must be `docker-desktop`. Neither Tiltfile nor the helper switches context for you. Check that ports **3000, 3001, 4318, 6006, 9090 and 10350** are free and that the lab namespace is absent or belongs to this lab; do not adopt another person's deployment.
@@ -42,7 +42,7 @@ On macOS, a useful port check is:
 lsof -nP -iTCP:3000 -iTCP:3001 -iTCP:4318 -iTCP:6006 -iTCP:9090 -iTCP:10350 -sTCP:LISTEN
 ```
 
-The helper reports versions, Docker connectivity and node status. It does not install dependencies, configure authentication, or claim that the image-store compatibility check has passed; Tilt checks that at startup.
+The helper reports versions, Docker connectivity and node status. It does not install dependencies, configure authentication, or claim that the image-store compatibility check has passed; Tilt checks that at startup. Bash helpers use `jq` for JSON, `curl` for HTTP, and OpenSSL for random credentials/IDs. **Python is not required to run the lab.** Building the MkDocs site still uses Python, separately.
 
 ### Docker Desktop compatibility
 
@@ -67,7 +67,7 @@ docker info --format '{{json .DriverStatus}}'
 From the repository root:
 
 ```sh
-python3 scripts/viewer_setup.py
+bash scripts/viewer-setup.sh
 tilt up --host 127.0.0.1 --stream
 ```
 
@@ -89,17 +89,17 @@ Loopback forwarding protects host access; other workloads in the Kubernetes clus
 In a second terminal:
 
 ```sh
-python3 scripts/lab.py smoke
+bash scripts/lab.sh smoke
 ```
 
-The helper creates a fresh synthetic trace with current timestamps, posts OTLP HTTP/JSON, checks receiver partial-success errors, and polls Tempo through Grafana until the stored single-span trace is readable. It prints a trace ID for local investigation and exits nonzero on failure.
+The Bash helper creates a fresh synthetic three-span trace, posts OTLP HTTP/JSON, checks partial-success errors, and reads it back from all three viewers. `lab.sh smoke` delegates to `viewers.sh smoke`. It prints a trace ID and exits nonzero on failure. This replaces the original Python single-span probe.
 
 This probes local HTTP/JSON receiver compatibility. The CLI checks below exercise the actual **HTTP/protobuf exporter**. Synthetic success alone does not prove Copilot capture.
 
 ## Run a CLI task
 
 ```sh
-python3 scripts/lab.py run -- \
+bash scripts/lab.sh run -- \
   -p "Reply with exactly: local telemetry ready. Do not use tools."
 ```
 
@@ -117,17 +117,17 @@ scratch=$(mktemp -d)
 cd "$scratch"
 since=$(date +%s)
 
-python3 "$lab_repo/scripts/lab.py" run -- \
+bash "$lab_repo/scripts/lab.sh" run -- \
   --no-custom-instructions --disable-builtin-mcps \
   --deny-tool=shell --deny-tool=write \
   -p "Reply with exactly: local telemetry ready. Do not use tools."
 
-python3 "$lab_repo/scripts/lab.py" run -- \
+bash "$lab_repo/scripts/lab.sh" run -- \
   --no-custom-instructions --disable-builtin-mcps \
   --available-tools=bash --allow-tool='shell(printf)' \
   -p "Use the bash tool exactly once to run printf 'otel-tool-check\n', then reply with exactly that output. Do not read or write files, run other commands, or call other tools."
 
-python3 "$lab_repo/scripts/lab.py" verify-copilot \
+bash "$lab_repo/scripts/lab.sh" verify-copilot \
   --since "$since" --expected-traces 2
 
 cd "$lab_repo"
@@ -141,6 +141,8 @@ The verifier requires recent service-matched traces containing invocation, model
 The helper checks a defined set of GenAI content keys, **not all potentially sensitive metadata**. Errors, paths or new vendor fields still require inspection and the proposed privacy allowlist.
 
 ## Use the web viewer
+
+The lab now provisions an **[Agent cost investigation - SYNTHETIC DEMO](http://127.0.0.1:3000/d/agent-cost-demo)** dashboard. Populate it with `bash scripts/demo.sh` and follow [the scenario walkthrough](../insights/demo.md). It uses invented `agent_demo_*` metrics, not live CLI billing totals. Native CLI metrics still belong in Explore.
 
 **Seeing little data on JVM/RED dashboards?** Those bundled dashboards do not target Copilot metrics. See [Generate CLI data and find it](generate-and-find-data.md#grafana-why-the-bundled-dashboards-are-empty) for suitable queries, short-lived metric lookback, a six-one-shot series, and Phoenix/Langfuse navigation. Starting Tilt does not globally configure plain `copilot`; launch each captured process through the wrapper.
 
@@ -210,7 +212,7 @@ Stopping the backend does not change a running CLI's telemetry settings. Exit th
 ## Local checks
 
 ```sh
-python3 -m unittest discover -s tests -v
+bash tests/test_lab.sh
 ```
 
 CI runs the helper's unit tests without starting Kubernetes or invoking a paid model. The [experiment record](../experiments/cli-local-otel.md) covers the manual end-to-end run.

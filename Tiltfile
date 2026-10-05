@@ -1,6 +1,17 @@
 if k8s_context() != 'docker-desktop':
     fail('Use the docker-desktop Kubernetes context for this local-only lab.')
 
+dashboard = str(read_file('local/demo-dashboard.json'))
+k8s_yaml(encode_yaml({
+    'apiVersion': 'v1', 'kind': 'ConfigMap',
+    'metadata': {'name': 'agent-demo-dashboard', 'namespace': 'agent-analytics-lab'},
+    'data': {'demo.json': dashboard},
+}))
+k8s_yaml(encode_yaml({
+    'apiVersion': 'v1', 'kind': 'ConfigMap',
+    'metadata': {'name': 'agent-demo-dashboard-provider', 'namespace': 'agent-analytics-lab'},
+    'data': {'agent-demo.yaml': str(read_file('local/demo-dashboard-provider.yaml'))},
+}))
 k8s_yaml('local/lgtm.yaml')
 collector_config = str(read_file('local/collector.yaml'))
 viewers = read_yaml_stream('local/viewers.yaml')
@@ -23,6 +34,7 @@ k8s_resource(
     ],
     links=[
         link('http://127.0.0.1:3000/explore', 'OTel viewer'),
+        link('http://127.0.0.1:3000/d/agent-cost-demo', 'Synthetic cost demo'),
     ],
 )
 k8s_resource('collector', port_forwards=[port_forward(4318, 4318, host='127.0.0.1')],

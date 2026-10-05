@@ -13,6 +13,8 @@ Desktop-first users can start with [saved local session data](guides/local-sessi
 
 **Ready to generate and inspect data?** [Run a series of CLI one-shots and find the results](guides/generate-and-find-data.md), including why Grafana's bundled dashboards are empty and how to query metrics after a CLI exits. Capture requires the launcher; Tilt alone does not globally instrument `copilot`.
 
+**Our current objective is Copilot cost management.** We have billing and a LinearB delivery view, but not yet an explanation of what drives usage. Start with [the cost objective](insights/cost-objective.md), then [the six-scenario demo](insights/demo.md). It teaches context/output growth, retry loops, fan-out and model comparisons without paid inference. The local helpers are now Bash, not Python.
+
 ## Choose a reading path
 
 | Your question | Start here | Then read |

@@ -56,11 +56,22 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 5
           volumeMounts:
+            - name: demo-dashboard
+              mountPath: /agent-analytics-dashboards
+            - name: demo-provider
+              mountPath: /otel-lgtm/grafana/conf/provisioning/dashboards/agent-demo.yaml
+              subPath: agent-demo.yaml
             - name: data
               mountPath: /data
             - name: loki
               mountPath: /loki
       volumes:
+        - name: demo-dashboard
+          configMap:
+            name: agent-demo-dashboard
+        - name: demo-provider
+          configMap:
+            name: agent-demo-dashboard-provider
         - name: data
           emptyDir:
             sizeLimit: 5Gi

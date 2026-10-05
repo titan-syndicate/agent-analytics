@@ -1,82 +1,65 @@
-# Useful insights, evidence and gaps
+# Spot a pattern before calling it waste
 
-**The first insights should fix recurring tool/workflow friction, not assign individual productivity scores.** This catalog distinguishes what OTel directly measures from what we have to infer or label.
+**We want to explain Copilot usage—not declare every large session inefficient.** Start with a successful task of roughly the same kind, then ask what changed. The [demo](demo.md) gives you safe examples to practice on.
 
-## The highest-value starting questions
+## The patterns worth inspecting first
 
-| Insight | OTel evidence | Missing evidence / caveat | Intervention to test |
-| --- | --- | --- | --- |
-| Tool reliability bottleneck | Tool counts, status/error, duration; MCP connection outcomes | Successful tools can return wrong/useless data | Preflight auth/schema; repair a flaky integration |
-| Repeated execution loop | Ordered tool/model spans and repeated tool names | Repetition alone is not waste; arguments/content may be unavailable | Narrow the plan, improve command selection, add a loop guard |
-| Context churn | Input token trajectory, compaction/truncation events | Complexity may justify long context; events vary by runtime | Repository map, scoped retrieval, task-state summary |
-| Latency concentration | Chat/tool timing and streaming first-chunk fields | Human wait time and concurrent work complicate totals | Remove repeated setup or slow integration calls |
-| Model routing mismatch | Requested/resolved model, usage, task class | Cheaper models may reduce correctness; Auto behavior can change | Evaluate fixed configurations on the same task fixtures |
-| Skill friction or benefit | Skill invocation events, bundle version, tool outcomes | Invocation proves usage, not effectiveness | Versioned skill change with baseline/treatment tasks |
-| Poor value per accepted task | Chat tokens/root AI units joined to outcomes | Unknown outcomes and incomplete billing coverage | Improve verification/retrieval before enforcing budgets |
-| Environment setup tax | Repeated dependency/build/test setup spans | Shell commands may lack normalized categories | Deterministic setup tool or reusable development environment |
-
-## First five views
-
-**1. Tool health.** Failure proportion and duration distribution by tool category/version. Show completed calls, failed calls and unknown status separately. Distinguish agent misuse from unavailable credentials or an unstable MCP service.
-
-**2. Interaction shape.** Model-call/tool-call counts per root interaction and task class. High tails deserve inspection; medians conceal the long sessions experienced by heavy users.
-
-**3. Context pressure.** Input token trajectory and compaction/truncation occurrence by task class. Separate total consumed input tokens across calls from the size of the latest context; repeated history can increase consumption without increasing the final context window.
-
-**4. Outcome-conditioned usage.** Chat token totals and root AI units by accepted/partial/rejected/abandoned/unknown tasks. Keep unknowns visible. A task may span several sessions; add a private explicit task-to-session link rather than guessing by time.
-
-**5. Tooling comparison.** Baseline versus a pinned instruction/skill/tool bundle on comparable tasks. Show outcome, rework, latency and usage together, plus client/model versions and capture coverage.
-
-## Concrete query recipes
-
-These are backend-independent query specifications, not executable PromQL or OpenSearch DSL. Use the [normalized records](../proposals/viewer.md) to implement them consistently.
-
-| Question | Filter / grouping | Computation and interpretation |
+| What catches your eye | What it might mean | What to check before acting |
 | --- | --- | --- |
-| Which tool causes repeated failures? | Unique `execute_tool` spans; group tool name + bundle version | Failed completed calls divided by calls with known status; show unknown count |
-| How token-heavy is an accepted bug fix? | Labeled accepted bug-fix tasks; unique chat spans associated with each task | Sum input/output separately per task, then report median/p90 and sample size |
-| Where does latency come from? | Root interactions; child operation intervals | Report wall-clock latency and operation distributions; do not sum overlapping children into wall time |
-| Is compaction more common after a change? | Sessions with known event coverage; bundle version + task class | Sessions with at least one compaction divided by eligible sessions; label incomplete event coverage |
-| Did a skill reduce repair loops? | Comparable task fixtures; baseline vs treatment | Review sequence pattern plus acceptance/rework; counts alone cannot establish waste |
-| How much Copilot usage was consumed? | Unique top-level root invocations with billing field | Sum `github.copilot.nano_aiu`, convert to AI units; report missing values and no currency claim |
+| Input grows across model calls | Too much retrieval/history, or genuinely difficult work | Task scope, cache categories, useful evidence and result |
+| Output is unusually large | Unnecessary explanation or generated material | Was that output required and used? |
+| Many model/tool calls | Retries, exploration, or a broken integration | Call sequence, failure type, accepted outcome |
+| Several child agents for one prompt | Useful parallelism or duplicated work | Worker scopes, unique deliverables, root wall time |
+| A larger resolved model | Routing mismatch or necessary capability | Requested/resolved fields, task difficulty, fixed-model comparison |
+| Long tool waits | Environment/setup tax | Auth, runner availability, service latency |
 
-For acceptance proportion, use tasks with a known completed outcome and show excluded unknown/abandoned cases. Also report abandonment separately so a treatment cannot “improve” by dropping difficult tasks from the denominator.
+These are **review candidates**, not universal thresholds. A “too many calls” rule needs a task class and a quality bar. We do not have a tested organization-wide threshold yet.
 
-## Example: a repeated test-command failure
+## Input, output and context are different questions
 
-Suppose several sessions repeatedly call an unavailable test runner before finding the right command. Metadata shows failed tool spans, extra model calls and long interactions. The participant confirms environment discovery was the problem.
+Look at input and output separately. Large input with small output suggests a different investigation from small input with long output.
 
-Change one repository skill to select the supported package manager and test command deterministically. Compare equivalent tasks using the old/new skill. Success means accepted results with less environment friction, not simply fewer tool calls. Keep a counterexample where discovery is genuinely necessary.
+Also separate **consumption across calls** from **context size on one call**. Four 20,000-token inputs consume 80,000 input tokens; they do not prove an 80,000-token context window.
 
-This is a strong early insight because the intervention addresses a concrete integration defect. “You should write better prompts” is usually weaker and harder to evaluate.
+Cache reads and cache creation matter. Different backends may show inclusive input or uncached input. Check the source categories before comparing tools. A high token count may have a different billing weight than you expect.
 
-## Example: context churn
+## Count the work once
 
-Suppose long investigations repeatedly compact and reload broad directory content. Inspect a typical successful investigation as a comparator. The problem may be poor retrieval scope, not the model.
+For token analysis, use unique `chat` spans. Do not add root totals to their children's totals. For delegation, report root interactions and child agent invocations separately.
 
-Test a repository-navigation tool or a structured progress summary. If the treatment uses fewer input tokens but misses required evidence or creates more rework, reject it. Content-free metadata can locate candidates; approved examples or user feedback are often needed to understand why.
+For latency, keep root wall time and child activity separate. Parallel workers overlap; summing their time overstates what the user waited.
 
-## Cost: keep four ledgers separate
+Short-lived CLI processes can reset the same Prometheus series. Use traces for small-run attribution rather than treating `last_over_time` as a batch total. A chart showing no sample at “now” is also not the same as zero usage.
 
-| Ledger | Source | Correct interpretation |
-| --- | --- | --- |
-| Token usage | Unique model-call spans or correctly aggregated metrics | Technical consumption, with provider-specific cache semantics |
-| Copilot AI units / multipliers | Runtime billing attributes | Usage units/multipliers, not currency |
-| Actual billed spend | GitHub billing/usage exports and plan terms | Financial truth, reconcile on an appropriate time/account grain |
-| Total workflow cost | Spend + infrastructure + human rework evidence | Decision support, with explicit assumptions and uncertainty |
+## Turn an outlier into a useful question
 
-For BYOK, a versioned provider rate card can estimate inference cost if the emitted token categories map correctly. Label the result “estimated,” include the rate date, and reconcile to provider billing. Do not use a generic public token price to estimate Copilot invoice dollars.
+Suppose a test-backed fix has four failed test commands, then a successful one. Ask:
 
-## What requires an evaluation system?
+* Did the agent pick the wrong command, or was the runner unavailable?
+* Could a preflight have told it the right command?
+* Would that change preserve the tests we actually need?
 
-Correctness, maintainability, security, policy compliance and usefulness cannot be inferred reliably from “span status OK.” Add task fixtures, deterministic checks and a human rubric. If using an LLM judge, calibrate against human judgments, version it and disclose disagreements; its score is not ground truth.
+That points to a maintainable tooling fix. “Prompt better” is much less actionable.
 
-## Biases and false precision
+Now suppose three agents investigate different modules. Before capping fan-out, check whether the parallel work found evidence a serial approach would have missed. The expensive-looking trace could be the good one.
 
-High-volume volunteers are not representative of 1,000 engineers. Their tasks, model choices and skill differ. Compare within a task class and environment; avoid cross-team leaderboards.
+## Keep four measures separate
 
-Schema gaps, lost spans, sampling, incomplete sessions and missing outcome labels all bias totals. Report those gaps next to the chart. Treat changing model routing or runtime versions as confounders.
+| Measure | What it tells us |
+| --- | --- |
+| Model-call tokens | Technical consumption and context/output patterns |
+| Copilot runtime usage units/multipliers | Runtime billing signals when present, with their own grain |
+| GitHub billing exports | Actual financial usage under our plan |
+| Delivery and rework | Whether the investment produced useful work |
 
-OTel reveals patterns worth investigating. The useful insight is **a testable intervention backed by examples**, not a chart annotation that sounds certain.
+A public model price in Phoenix/Langfuse is not a Copilot invoice. Do not sum root billing units with child billing units either. Show missing values and incomplete capture rather than substituting zero.
 
-**Next:** [The improvement loop](improvement-loop.md).
+## The best early insights end in a test
+
+A useful finding sounds like: “On these test-backed tasks, a runner preflight might remove this repeatable setup loop. Let's compare it with the old workflow.”
+
+It does **not** sound like: “The highest-token engineers are the least efficient.”
+
+Require an outcome: accepted, partial, rejected, abandoned, or unknown. Compare like tasks, show sample size, and keep unknown outcomes visible. Without quality/rework evidence, lower usage is only lower usage—not improvement.
+
+**Next:** [Use the improvement loop](improvement-loop.md) to decide what to change and whether to keep it.

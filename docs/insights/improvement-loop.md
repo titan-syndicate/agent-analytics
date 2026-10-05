@@ -1,117 +1,77 @@
-# From numbers to an engineering improvement loop
+# Make one change, then see if it helped
 
-**The loop is: identify repeated friction, propose one change, evaluate it on comparable tasks, roll it out narrowly, and verify that quality did not regress.** Dashboards are the entry point; versioned tools and evaluations are the durable output.
+**The point of analytics is a better workflow—not another weekly screenshot.** We want to spend less on avoidable friction while keeping useful outcomes. Eventually we will connect that to delivery and ROI.
 
-## The operating model
+## A small loop we can actually run
 
 ```text
-Observe
-  -> label outcomes and capture gaps
-  -> review representative sessions
-  -> write a falsifiable hypothesis
-  -> change one versioned capability
-  -> evaluate baseline vs treatment
-  -> approve limited rollout
-  -> monitor real use and counterexamples
+Notice a pattern
+  -> inspect a few examples
+  -> state a hypothesis
+  -> change one thing
+  -> compare outcomes and usage
   -> keep, revise, or roll back
 ```
 
-The artifact we want is a better skill, deterministic tool, instruction bundle or workflow, with evidence for where it helps. A weekly dashboard screenshot is not an improvement artifact.
+Start manually. We do not need an autonomous optimizer to learn whether a broken test integration is wasting calls.
 
-## A worked example
+## Example: fix the test setup tax
 
-**Observation:** test-backed bug fixes frequently spend several tool calls discovering how to run tests.
+**What we saw:** Some bug-fix sessions repeatedly tried unavailable test runners. They had extra tool errors and model calls.
 
-**Hypothesis:** a repository-specific test skill with an environment preflight will reduce setup failures and interaction latency without reducing accepted fixes.
+**Our hypothesis:** A repository-specific preflight will remove that setup loop without skipping required tests.
 
-**Change:** version the skill from `baseline` to `test-preflight-v1`; select the package manager from repository metadata, verify prerequisites, and run the smallest correct test target. Do not simultaneously change model routing and global instructions.
+**One change:** Add a pinned test-running skill/tool that checks the package manager, runner and smallest appropriate target. Leave model routing and other instructions unchanged.
 
-**Evaluation:** use a small set of non-sensitive bug-fix fixtures with clear expected tests. Run baseline/treatment in clean worktrees with controlled permissions, comparable context, and recorded runtime/model configurations. Alternate/randomize order when practical. Include failures and retries, not only successful runs.
+**The comparison:** Run the old and new workflow on the same approved task fixtures, with clean environments and known expected tests. Alternate the order where practical. Record failures, abandoned tasks and retries, not only successes.
 
-**Proposed keep criteria:** fewer setup failures and lower median/p90 interaction latency; no observed reduction in accepted results; no material increase in human rework. Predeclare what “material” means for the cohort. A 15% latency target might be a useful pilot hypothesis, not proof of an industry benchmark.
+**What would count as better:** Comparable accepted results with fewer setup errors, less rework and lower usage/wall time. Decide the quality bar and what counts as a meaningful change *before* reviewing the results.
 
-**Counterexample:** a repository with intentionally multiple test runners may need discovery. The skill should recognize that case rather than forcing the wrong command.
+**What would disprove it:** The tool runs faster but chooses the wrong test target. Or it works only in one unusually simple repository. Those are reasons to revise or reject it—not hide the bad examples.
 
-**Rollout:** offer it to a small opt-in cohort; compare real sessions; keep a pinned rollback version. If the result is inconclusive, collect more evidence instead of promoting it because the average token count looks good.
+## Keep an experiment card, not a giant report
 
-## The recurring review meeting
+Put this in a private tracker:
 
-A 30-minute weekly review is enough for the first cohort:
+| Field | Example |
+| --- | --- |
+| Question | Can preflight reduce avoidable runner retries? |
+| Task class | Test-backed bug fix |
+| Old/new versions | baseline / test-preflight-v1 |
+| Evidence | Approved fixtures, trace links, runtime/model versions |
+| Quality bar | Required tests pass; reviewer accepts the fix |
+| Usage measures | Unique chat tokens, invocation shape, wall time |
+| Guardrails | No extra rework or policy failures |
+| Result | Keep / revise / rollback / inconclusive |
 
-| Time | Activity | Output |
-| --- | --- | --- |
-| 5 minutes | Check capture coverage and privacy status | Whether the data is fit for decisions |
-| 10 minutes | Review a typical case, an outlier and a counterexample | A friction pattern with concrete evidence |
-| 10 minutes | Choose one intervention and evaluation plan | Owner, bundle version, task class and criteria |
-| 5 minutes | Decide previous experiment's outcome | Keep, revise, rollback or inconclusive |
+Include sample size, missing capture, unknown outcomes and a counterexample. Do not invent a percentage target from a vendor case study.
 
-Participants should be able to challenge the interpretation. “This expensive session saved a day of manual debugging” is context that a token chart lacks.
+## Connect this to the managers' view
 
-## A useful experiment record
+Managers already use LinearB dashboards, so bring those into the discussion. Use the same team/cohort and calendar window as billing, while being clear that only a subset of work may have local traces.
 
-Keep records in a private issue tracker or future experiment store, not a public telemetry repository:
+The story should have three parts: **what changed in tooling, what changed inside sampled tasks, and what happened to delivery/rework afterward**.
 
-```yaml
-experiment_id: test-preflight-v1
-task_class: test_backed_bugfix
-hypothesis: reduce_environment_discovery_failures
-baseline_bundle: baseline
-treatment_bundle: test-preflight-v1
-primary_outcome: accepted_result
-efficiency_measures:
-  - interaction_latency
-  - input_output_tokens
-  - root_ai_units
-guardrails:
-  - no_increase_in_human_rework
-  - no_new_policy_failures
-decision: pending
-```
+Throughput is one signal we want to improve. Pair it with cycle time, review load, defects/reverts and task mix. A before/after change is not automatic causal proof: staffing, release timing and task difficulty also move those numbers.
 
-Also record sample size, task fixture versions, runtime/model differences, missing data, confidence and counterexamples. Keep links to private evidence, not copied context bodies.
+Do not join a person's Git activity to an OTel session just because timestamps are close. Use approved explicit task links or cohort-level reporting, and disclose the coverage gap. This lab has no billing/LinearB ingestion yet.
 
-## Where agents can help
+## A weekly review can stay short
 
-| Maturity | Safe agent/tool role | Human control |
-| --- | --- | --- |
-| Manual | Explain a selected sanitized session, with span citations | Person chooses examples and interprets outcomes |
-| Assisted diagnosis | Produce a weekly friction digest from structured summaries | Person validates patterns and rejects spurious claims |
-| Assisted intervention | Draft a skill/tool change and evaluation cases | Maintainer reviews code, permissions and scope |
-| Evaluated recommendation | Compare pinned configurations and summarize evidence | Owner approves rollout/rollback |
-| Bounded automation | Open a change proposal for a known class of regression | No automatic global mutation or production remediation |
+Spend a few minutes checking coverage and privacy. Review one typical example, one outlier and one case that challenges the theory. Pick one intervention with an owner and a rollback version. Decide last week's experiment: keep, revise, stop, or gather more evidence.
 
-An insight assistant should use read-only queries, bounded data retrieval and no access to raw content unless specifically granted. Treat captured prompts/tool output as untrusted input, not instructions. Recommendations need evidence, uncertainty and a proposed disconfirming test.
+Let participants explain the work. “That long session saved a day of debugging” is important evidence a token chart does not contain.
 
-## Turn local learning into shared capabilities
+## Where agents help
 
-When a pattern recurs, fix the environment or tool before telling every engineer to prompt differently. Examples include a stable test-running integration, searchable repository map, narrow build tool, reliable MCP auth flow, reusable task-state summary, and policy-aware dependency setup.
+Agents can summarize a selected trace, find recurring patterns in bounded data, draft a tooling change, or prepare an experiment comparison. They should cite span IDs and show uncertainty—not infer intent or productivity from usage.
 
-Package successful interventions with:
+Start read-only. Keep a human in charge of budgets, model policies and rollout decisions. Captured text is untrusted data, never an instruction to the analyst. See [copyable analysis prompts and local MCP options](agent-analysis.md).
 
-* A stated task class and limitations.
-* A pinned version, owner and rollback path.
-* Evaluation fixtures and regression checks.
-* Usage instructions and minimum permissions.
-* A concise evidence record, including negative cases.
+## The cultural goal
 
-The shared marketplace or internal distribution channel should promote proven capabilities, not unreviewed prompt snippets. Adoption remains voluntary during the pilot.
+Share lessons like “our test integration caused retries” or “scoped retrieval helped this task class.” Avoid engineer leaderboards and blanket token caps.
 
-## Culture: coaching and paved roads, not surveillance
+Make the reliable path easy to use: a good repository map, deterministic setup, a working test tool, clear worker scopes and well-tested skills. Reward useful outcomes and honest failed hypotheses, not high AI activity.
 
-Publish aggregate lessons such as “our test integration caused avoidable retries” and “this navigation skill helps investigations in these repositories.” Do not publish “engineer X uses too many tokens.”
-
-Let participants inspect their own data, correct task labels, opt out and share only selected examples. Budget discussions should be about task value and constraints, not personal blame. Reward finding an integration problem or a failed hypothesis, not maximizing AI activity.
-
-A high-consistency culture values repeatable verification, explicit uncertainty and improving shared tools. It does not require everyone to use the same model or style for every task.
-
-## Longer-term maturity
-
-**First month:** manual review, simple labels, one controlled change.
-
-**Next quarter:** reusable evaluation suites, versioned tooling bundles, assisted weekly diagnosis, opt-in sanitized summaries.
-
-**At organization scale:** central aggregate observability, budgets by approved task/cohort, regression detection, governed distribution and continuous evaluation. Keep individual detailed context private unless an explicit exception applies.
-
-The long-term loop should connect operational telemetry, task evaluations, developer feedback and team delivery outcomes. None of those replaces the others.
-
-**Next:** [Privacy and trust](../enterprise/privacy.md) sets the rules for sustaining that culture.
+**Our first milestone:** Explain a repeatable cost driver and improve it on a small cohort. **Later:** reconcile usage with billing, watch delivery guardrails, and build a defensible ROI model. Do not skip the middle steps.

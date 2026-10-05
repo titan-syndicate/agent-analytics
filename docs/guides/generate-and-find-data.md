@@ -4,12 +4,13 @@
 
 The existing lab has verified CLI traces in all three viewers. A blank bundled Grafana dashboard is not proof of missing telemetry: those dashboards target different workloads, and one-shot metric series stop emitting when their processes exit.
 
+**Want a walkthrough before making paid calls?** [Run the synthetic cost demo](../insights/demo.md). It has its own dashboard and per-scenario trace links. The Bash commands below are for real CLI metadata; Python is no longer a local prerequisite.
 ## Is my CLI configured?
 
 | Launch method | Local lab routing |
 | --- | --- |
-| `python3 scripts/lab.py run -- -p "..."` | Configured for this new process |
-| `python3 scripts/lab.py run` | Configured for this new interactive process |
+| `bash scripts/lab.sh run -- -p "..."` | Configured for this new process |
+| `bash scripts/lab.sh run` | Configured for this new interactive process |
 | Plain `copilot` in an unrelated terminal | Not configured by this repository; depends on that terminal's environment/managed settings |
 | A process started before configuration | Not retroactively configured |
 | Copilot desktop | Not configured by the CLI wrapper; separate experiment |
@@ -17,10 +18,10 @@ The existing lab has verified CLI traces in all three viewers. A blank bundled G
 From the repository root, use:
 
 ```sh
-python3 scripts/lab.py run
+bash scripts/lab.sh run
 ```
 
-For an instrumented interactive session, run this from the directory of your approved task, using the absolute path to `scripts/lab.py`. That directory supplies the CLI's normal working context. Unlike the controlled smoke tasks below, ordinary sessions can load repository instructions and use your usual tools.
+For an instrumented interactive session, run this from the directory of your approved task, using the absolute path to `scripts/lab.sh`. That directory supplies the CLI's normal working context. Unlike the controlled smoke tasks below, ordinary sessions can load repository instructions and use your usual tools.
 
 The wrapper sets `COPILOT_OTEL_ENABLED=true`, HTTP/protobuf export to `http://127.0.0.1:4318`, service `github-copilot-local`, and message-content capture off. It disables session syncing for the child, clears conflicting inherited OTel settings, and preserves authentication. It does **not** make model inference offline or bypass enterprise-managed policy.
 
@@ -31,15 +32,15 @@ No global CLI configuration was installed during our experiment. To capture futu
 If the lab is not already running, initialize it in a checkout:
 
 ```sh
-python3 scripts/lab.py doctor
-python3 scripts/viewer_setup.py
+bash scripts/lab.sh doctor
+bash scripts/viewer-setup.sh
 tilt up --host 127.0.0.1 --stream
 ```
 
 Leave that terminal open. Wait for `lgtm`, `phoenix`, `langfuse` and `collector` to be healthy in [Tilt](http://127.0.0.1:10350). Then, in a second terminal at the repository root:
 
 ```sh
-python3 scripts/viewers.py smoke
+bash scripts/viewers.sh smoke
 ```
 
 This injects a synthetic agent/model/tool trace and reads it from all three stores. It uses **no model call or Copilot quota** and prints the shared trace ID. It does not produce real CLI token/tool metrics; those need actual instrumented CLI tasks.
@@ -55,7 +56,7 @@ The following runs three pairs of tasks sequentially: a model-only reply and a n
   set -eu
   lab_repo="$PWD"
   pairs=3
-  python3 "$lab_repo/scripts/viewers.py" smoke
+  bash "$lab_repo/scripts/viewers.sh" smoke
   scratch=$(mktemp -d)
   trap 'cd "$lab_repo"; rmdir "$scratch"' EXIT
   cd "$scratch"
@@ -64,37 +65,28 @@ The following runs three pairs of tasks sequentially: a model-only reply and a n
   i=1
   while [ "$i" -le "$pairs" ]; do
     printf '\nPair %s of %s: model-only task\n' "$i" "$pairs"
-    python3 "$lab_repo/scripts/lab.py" run -- \
+    bash "$lab_repo/scripts/lab.sh" run -- \
       --no-custom-instructions --disable-builtin-mcps \
       --deny-tool=shell --deny-tool=write \
       -p "Reply with exactly: local telemetry ready. Do not use tools."
 
     printf '\nPair %s of %s: tool task\n' "$i" "$pairs"
-    python3 "$lab_repo/scripts/lab.py" run -- \
+    bash "$lab_repo/scripts/lab.sh" run -- \
       --no-custom-instructions --disable-builtin-mcps \
       --available-tools=bash --allow-tool='shell(printf)' \
       -p "Use the bash tool exactly once to run printf 'otel-tool-check\n', then reply with exactly that output. Do not read or write files, run other commands, or call other tools."
     i=$((i + 1))
   done
 
-  python3 "$lab_repo/scripts/lab.py" verify-copilot \
+  bash "$lab_repo/scripts/lab.sh" verify-copilot \
     --since "$since" --expected-traces "$((pairs * 2))" \
     > "$lab_repo/.local-lab/batch-result.json"
   cat "$lab_repo/.local-lab/batch-result.json"
 
   cd "$lab_repo"
-  python3 - <<'PY'
-import json
-import subprocess
-
-with open(".local-lab/batch-result.json") as source:
-    result = json.load(source)
-for trace_id in result["trace_ids"]:
-    subprocess.run(
-        ["python3", "scripts/viewers.py", "verify", "--trace-id", trace_id],
-        check=True,
-    )
-PY
+  while IFS= read -r trace_id; do
+    bash scripts/viewers.sh verify --trace-id "$trace_id"
+  done < <(jq -r '.trace_ids[]' .local-lab/batch-result.json)
 )
 ```
 
@@ -106,7 +98,7 @@ Expect roughly six root interactions and three tool operations if the model foll
 
 ## Grafana: why the bundled dashboards are empty
 
-LGTM includes **JVM Overview (OpenTelemetry)** and **RED Metrics** dashboards. Copilot CLI is not a JVM service and does not emit the JVM heap/thread metrics those panels query. The bundled RED dashboards also expect different request metric families. This repository currently provisions **no Copilot-specific dashboard**.
+LGTM includes **JVM Overview (OpenTelemetry)** and **RED Metrics** dashboards. Copilot CLI is not a JVM service and does not emit the JVM heap/thread metrics those panels query. The bundled RED dashboards also expect different request metric families. The repository now provisions a separate **synthetic cost-demo dashboard**, but it is not a real-Copilot usage/billing dashboard. Generate it with `bash scripts/demo.sh`; use Explore for native CLI metrics.
 
 Use [Grafana Explore](http://127.0.0.1:3000/explore) instead. TraceQL and PromQL are different languages for different data sources:
 
@@ -169,7 +161,7 @@ Open [Langfuse](http://127.0.0.1:3001), sign in as `local@example.invalid` using
 
 Open the trace/observations view, clear unrelated filters and select the run's time range. Open the recent interaction and compare its trace ID with the verifier/Phoenix. Inspect `AGENT`, `GENERATION` and `TOOL` observations. The sessions view groups observations with a mapped session ID; missing source session attributes are not invented.
 
-Langfuse can split input tokens into uncached, cache-read and cache-write categories, whereas Phoenix shows inclusive prompt tokens. Compare the sum of those Langfuse input categories with the source, not just its uncached `input` field. Displayed price estimates are not Copilot billing/AI Credits.
+Langfuse can split input tokens into uncached, cache-read and cache-write categories, whereas Phoenix shows inclusive prompt tokens. Compare the sum of those input categories with the source, not just uncached `input`. It can also split reasoning tokens from output; compare output plus reasoning when the source output is inclusive. Displayed price estimates are not Copilot billing/AI Credits.
 
 ## Diagnose missing data in order
 
@@ -177,7 +169,7 @@ Langfuse can split input tokens into uncached, cache-read and cache-write catego
 | --- | --- |
 | JVM/RED dashboard empty | Use Tempo/Prometheus Explore with the queries above |
 | Traces exist, Instant metric query empty | Historical Range query or explicit `last_over_time` |
-| No new CLI traces | Launch through `scripts/lab.py run`, wait for normal completion, check time/service filters |
+| No new CLI traces | Launch through `scripts/lab.sh run`, wait for normal completion, check time/service filters |
 | Synthetic check passes but no CLI metrics | Synthetic spans do not generate native CLI metrics; run the safe pair |
 | Only one viewer empty | Correct project/time filters, shared trace ID, Collector exporter logs |
 | Langfuse login fails | Current generated credentials/Secret and initialized database must match |

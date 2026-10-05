@@ -19,15 +19,25 @@ importer, installable skill, policy gateway and custom viewer remain proposals.
 No real session content or credentials
 belong here.
 
+**Start with the [cost-investigation demo](https://titan-syndicate.github.io/agent-analytics/insights/demo/).**
+It works backward from Copilot spend, using six invented scenarios to show
+context churn, verbose output, retries, agent fan-out and resolved model choice.
+The goal is finding testable inefficiencies, not assigning engineer scores or
+turning tokens into invoice dollars.
+
 ## Run the local OTel lab
 
-Prerequisites: Python 3.9+, Docker Desktop with Kubernetes enabled, `kubectl`,
+Prerequisites: Bash 3.2+, jq, curl, OpenSSL, Docker Desktop with Kubernetes enabled, `kubectl`,
 Tilt, and an installed/authenticated Copilot CLI. The selected Kubernetes context
 must be `docker-desktop`; no script switches it automatically.
 
+The local lab needs **no Python**. Bash handles launch/setup, `curl` makes HTTP
+requests, `jq` reads/builds JSON, and OpenSSL generates random local keys. MkDocs
+still uses Python to build the documentation site, but that is a separate task.
+
 ```sh
-python3 scripts/lab.py doctor
-python3 scripts/viewer_setup.py
+bash scripts/lab.sh doctor
+bash scripts/viewer-setup.sh
 tilt up --host 127.0.0.1 --stream
 ```
 
@@ -42,11 +52,42 @@ for deployment resources, mapping details and cleanup.
 Anonymous access is limited to Grafana's Viewer role. Keep the cluster trusted:
 loopback forwarding does not prevent other cluster workloads reaching the Pod.
 
+## Try the cost-investigation demo first
+
+With Tilt healthy, run:
+
+```sh
+bash scripts/demo.sh
+cat .local-lab/demo-links.md
+```
+
+Open the **[synthetic cost dashboard](http://127.0.0.1:3000/d/agent-cost-demo)**.
+The generator creates six invented scenarios and verifies them in all three
+backends. **No Copilot calls, credits or private history are involved.** Fresh
+per-scenario Phoenix/Langfuse links are in the local link file.
+
+Follow the **[hands-on walkthrough](https://titan-syndicate.github.io/agent-analytics/insights/demo/)**
+for what to click and which cost-driver questions each tool can answer.
+Then read the [cost objective](https://titan-syndicate.github.io/agent-analytics/insights/cost-objective/),
+[agent analysis prompts](https://titan-syndicate.github.io/agent-analytics/insights/agent-analysis/)
+and [research digest](https://titan-syndicate.github.io/agent-analytics/reference/cost-research/).
+
+| Bash helper | What it does |
+| --- | --- |
+| `scripts/lab.sh doctor` | Checks installed tools and selected local cluster |
+| `scripts/viewer-setup.sh` | Creates/reuses random local credentials; never commits keys |
+| `scripts/lab.sh run` | Configures only the new CLI child's OTel environment |
+| `scripts/viewers.sh smoke` / `verify` | Reads matching spans from all three stores |
+| `scripts/lab.sh verify-copilot` | Checks native CLI traces and token/tool metrics |
+| `scripts/demo.sh` | Generates labeled synthetic traces/metrics and fresh viewer links |
+
+## Capture real CLI metadata
+
 In another terminal:
 
 ```sh
-python3 scripts/lab.py smoke
-python3 scripts/lab.py run -- -p "Reply with exactly: local telemetry ready. Do not use tools."
+bash scripts/lab.sh smoke
+bash scripts/lab.sh run -- -p "Reply with exactly: local telemetry ready. Do not use tools."
 ```
 
 The wrapper starts a new CLI process with local HTTP/protobuf export, content
@@ -55,8 +96,8 @@ that child only**, preserves authentication, and does not configure desktop
 sessions. Enterprise-managed telemetry policy can still override local settings.
 
 **Plain `copilot` is not globally configured by this lab.** Use
-`python3 scripts/lab.py run` for a new instrumented interactive session, or
-`python3 scripts/lab.py run -- -p "..."` for each one-shot. Existing CLI/app
+`bash scripts/lab.sh run` for a new instrumented interactive session, or
+`bash scripts/lab.sh run -- -p "..."` for each one-shot. Existing CLI/app
 processes are not retroactively instrumented.
 
 ## Generate data and use the viewers
@@ -64,7 +105,7 @@ processes are not retroactively instrumented.
 Follow **[Generate CLI data and find it](https://titan-syndicate.github.io/agent-analytics/guides/generate-and-find-data/)**
 for a copyable series of six safe one-shots, stored-data verification, and
 step-by-step navigation in all three viewers. Start with one pair to limit quota
-usage. `python3 scripts/viewers.py smoke` checks all three stores without a model
+usage. `bash scripts/viewers.sh smoke` checks all three stores without a model
 call, but does not generate native CLI metrics.
 
 Grafana's bundled **JVM Overview** and **RED Metrics** dashboards are not Copilot
@@ -112,7 +153,7 @@ intend this lab to own.
 ## Check the lab code
 
 ```sh
-python3 -m unittest discover -s tests -v
+bash tests/test_lab.sh
 ```
 
 ## Preview and build

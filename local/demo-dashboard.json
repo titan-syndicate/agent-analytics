@@ -1,0 +1,27 @@
+{
+  "uid": "agent-cost-demo",
+  "title": "Agent cost investigation - SYNTHETIC DEMO",
+  "description": "Invented fixtures only. Not Copilot billing, ROI, or a production usage dashboard. Run bash scripts/demo.sh and select a run.",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "tags": ["agent-analytics", "synthetic-demo"],
+  "time": {"from": "now-1h", "to": "now"},
+  "refresh": "30s",
+  "templating": {
+    "list": [
+      {"name":"demo_run","label":"Demo run","type":"query","datasource":{"type":"prometheus","uid":"prometheus"},"query":"label_values(agent_demo_input_tokens, demo_run)","refresh":1},
+      {"name":"scenario","label":"Scenario","type":"query","datasource":{"type":"prometheus","uid":"prometheus"},"query":"label_values(agent_demo_input_tokens{demo_run=\"$demo_run\"}, scenario)","refresh":1,"multi":true,"includeAll":true,"allValue":".*","current":{"text":"All","value":"$__all"}}
+    ]
+  },
+  "panels": [
+    {"id":1,"type":"text","title":"Read this first","gridPos":{"x":0,"y":0,"w":24,"h":4},"options":{"mode":"markdown","content":"**Synthetic examples — no model calls and no actual spend.** Select one demo run. Every row is one invented task, not an engineer. Compare `baseline` with `context`, `output`, `retry`, `fanout`, and `routing`. Metrics are fixture gauges, not native Copilot counters. [Walkthrough](https://titan-syndicate.github.io/agent-analytics/insights/demo/). If data is missing, run `bash scripts/demo.sh` and widen the time range."}},
+    {"id":2,"type":"barchart","title":"Input tokens across model calls (fixture total)","datasource":{"type":"prometheus","uid":"prometheus"},"gridPos":{"x":0,"y":4,"w":12,"h":8},"targets":[{"refId":"A","expr":"last_over_time(agent_demo_input_tokens{demo_run=\"$demo_run\",scenario=~\"$scenario\"}[$__range])","instant":true,"format":"table"}],"fieldConfig":{"defaults":{"min":0},"overrides":[]},"options":{"xField":"scenario","orientation":"horizontal","showValue":"always"}},
+    {"id":3,"type":"barchart","title":"Output tokens across model calls (fixture total)","datasource":{"type":"prometheus","uid":"prometheus"},"gridPos":{"x":12,"y":4,"w":12,"h":8},"targets":[{"refId":"A","expr":"last_over_time(agent_demo_output_tokens{demo_run=\"$demo_run\",scenario=~\"$scenario\"}[$__range])","instant":true,"format":"table"}],"fieldConfig":{"defaults":{"min":0},"overrides":[]},"options":{"xField":"scenario","orientation":"horizontal","showValue":"always"}},
+    {"id":4,"type":"barchart","title":"Model calls for one task","datasource":{"type":"prometheus","uid":"prometheus"},"gridPos":{"x":0,"y":12,"w":8,"h":8},"targets":[{"refId":"A","expr":"last_over_time(agent_demo_model_calls{demo_run=\"$demo_run\",scenario=~\"$scenario\"}[$__range])","instant":true,"format":"table"}],"fieldConfig":{"defaults":{"min":0},"overrides":[]},"options":{"xField":"scenario","orientation":"horizontal","showValue":"always"}},
+    {"id":5,"type":"barchart","title":"Agent invocations (root plus workers)","datasource":{"type":"prometheus","uid":"prometheus"},"gridPos":{"x":8,"y":12,"w":8,"h":8},"targets":[{"refId":"A","expr":"last_over_time(agent_demo_agent_calls{demo_run=\"$demo_run\",scenario=~\"$scenario\"}[$__range])","instant":true,"format":"table"}],"fieldConfig":{"defaults":{"min":0},"overrides":[]},"options":{"xField":"scenario","orientation":"horizontal","showValue":"always"}},
+    {"id":6,"type":"barchart","title":"Failed tools — friction candidates","datasource":{"type":"prometheus","uid":"prometheus"},"gridPos":{"x":16,"y":12,"w":8,"h":8},"targets":[{"refId":"A","expr":"last_over_time(agent_demo_failed_tools{demo_run=\"$demo_run\",scenario=~\"$scenario\"}[$__range])","instant":true,"format":"table"}],"fieldConfig":{"defaults":{"min":0},"overrides":[]},"options":{"xField":"scenario","orientation":"horizontal","showValue":"always"}},
+    {"id":7,"type":"table","title":"Resolved model label — not a price table","datasource":{"type":"prometheus","uid":"prometheus"},"gridPos":{"x":0,"y":20,"w":12,"h":8},"targets":[{"refId":"A","expr":"last_over_time(agent_demo_model_calls{demo_run=\"$demo_run\",scenario=~\"$scenario\"}[$__range])","instant":true,"format":"table"}],"options":{"showHeader":true}},
+    {"id":8,"type":"barchart","title":"Task wall time, not summed child time","datasource":{"type":"prometheus","uid":"prometheus"},"gridPos":{"x":12,"y":20,"w":12,"h":8},"targets":[{"refId":"A","expr":"last_over_time(agent_demo_wall_seconds{demo_run=\"$demo_run\",scenario=~\"$scenario\"}[$__range])","instant":true,"format":"table"}],"fieldConfig":{"defaults":{"unit":"s","min":0},"overrides":[]},"options":{"xField":"scenario","orientation":"horizontal","showValue":"always"}}
+  ]
+}
