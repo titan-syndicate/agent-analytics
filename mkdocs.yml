@@ -61,10 +61,14 @@ nav:
   - Costs and improvement:
       - Start with our cost objective: insights/cost-objective.md
       - Hands-on cost demo: insights/demo.md
+      - Grafana demo walkthrough: insights/demo-grafana.md
+      - Phoenix demo walkthrough: insights/demo-phoenix.md
+      - Langfuse demo walkthrough: insights/demo-langfuse.md
       - Spot usage patterns: insights/catalog.md
       - Make one change and compare: insights/improvement-loop.md
       - Agent analysis prompts and MCP: insights/agent-analysis.md
   - Foundations:
+      - From a request to model calls: foundations/model-calls.md
       - What to call this practice: foundations/practice.md
       - What Copilot telemetry can tell us: foundations/telemetry.md
   - Setup guides:

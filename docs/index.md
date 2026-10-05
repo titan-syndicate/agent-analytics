@@ -15,6 +15,8 @@ Desktop-first users can start with [saved local session data](guides/local-sessi
 
 **Our current objective is Copilot cost management.** We have billing and a LinearB delivery view, but not yet an explanation of what drives usage. Start with [the cost objective](insights/cost-objective.md), then [the six-scenario demo](insights/demo.md). It teaches context/output growth, retry loops, fan-out and model comparisons without paid inference. The local helpers are now Bash, not Python.
 
+**New to model telemetry or these viewers?** Read [from a request to model calls](foundations/model-calls.md), then use the separate [Grafana](insights/demo-grafana.md), [Phoenix](insights/demo-phoenix.md) and [Langfuse](insights/demo-langfuse.md) walkthroughs. They explain what to click, what the rows mean and which questions the data cannot answer.
+
 ## Choose a reading path
 
 | Your question | Start here | Then read |

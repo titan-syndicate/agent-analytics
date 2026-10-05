@@ -48,7 +48,7 @@ The Collector preserves trace/span IDs, timestamps, parent relationships and ori
 | Conversation ID, when present on that span | `session.id` and `langfuse.session.id` |
 | Chat model and input/output tokens, when present | OpenInference model/token fields |
 
-Token mappings apply to **chat spans only**; root usage is not copied into model totals. Missing conversation IDs remain missing: this mapping does not invent a session ID or perform cross-batch ancestor propagation. Check child/session completeness before trusting session aggregates. Cache and vendor-specific usage semantics remain a separate compatibility question.
+Token mappings apply to **chat spans only**; root usage is not copied into model totals. Missing conversation IDs remain missing: this mapping does not invent a session ID or perform cross-batch ancestor propagation. Check child/session completeness before trusting session aggregates. Original cache attributes are retained when emitted; Phoenix's mapped prompt count is inclusive, while Langfuse can split cache categories. See [what we can see about cached input](../foundations/model-calls.md#can-our-lab-actually-see-cached-input) for the observed behavior and limits.
 
 The Phoenix project is `copilot-lab`; the Langfuse project is `Copilot comparison`. Content capture stays disabled in `scripts/lab.sh run`. Actual prompt/response text is not expected. Phoenix can synthesize an output envelope containing only the source response ID/model; that is metadata, not captured message content.
 
@@ -57,6 +57,8 @@ Each exporter has its own retry queue. This is not an atomic three-database tran
 ## Run the comparison
 
 For a guided tour with invented cost-driver cases and a dedicated Grafana dashboard, [run the synthetic demo](../insights/demo.md). It does not consume Copilot quota.
+
+New to the viewers? Use the click-by-click guides for [Grafana](../insights/demo-grafana.md), [Phoenix](../insights/demo-phoenix.md) and [Langfuse](../insights/demo-langfuse.md). Each covers all six scenarios, with exact span names and expected values.
 
 For CLI launch configuration, a series of one-shots, viewer navigation and blank Grafana dashboard diagnosis, follow **[Generate CLI data and find it](generate-and-find-data.md)**.
 

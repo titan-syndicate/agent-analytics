@@ -149,6 +149,8 @@ These queries were exercised against the running lab. Replace `[1h]` with an app
 
 ## Phoenix: open the agent trace
 
+For a first-time tour of the tree, including which row to click and where to find its token fields, start with the [Phoenix baseline walkthrough](../insights/demo-phoenix.md#baseline).
+
 Open [Phoenix](http://127.0.0.1:6006), select project **`copilot-lab`**, and open its traces/spans view. Clear unrelated filters and choose a time range containing your run. The **`default`** project is not the destination for new lab exports.
 
 Find the trace using the ID from the verifier (trace-ID filtering/search where offered), or open a recent trace and compare its ID/details. Inspect the `AGENT` root, `LLM` model calls and `TOOL` steps. Model-call attributes include `llm.model_name`, `llm.token_count.prompt` and `llm.token_count.completion`. Session grouping uses the mapped conversation ID when the source span has one.
@@ -156,6 +158,8 @@ Find the trace using the ID from the verifier (trace-ID filtering/search where o
 Input/output text is intentionally absent with content off. Phoenix may display a response envelope containing only response ID/model. Empty content panels do not justify enabling capture on private code.
 
 ## Langfuse: open the same trace
+
+For a first-time tour of observations and usage, start with the [Langfuse baseline walkthrough](../insights/demo-langfuse.md#baseline).
 
 Open [Langfuse](http://127.0.0.1:3001), sign in as `local@example.invalid` using `LANGFUSE_INIT_USER_PASSWORD` from `.local-lab/credentials.json`, and select **Local lab -> Copilot comparison**.
 

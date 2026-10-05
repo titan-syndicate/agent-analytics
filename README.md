@@ -68,6 +68,13 @@ per-scenario Phoenix/Langfuse links are in the local link file.
 
 Follow the **[hands-on walkthrough](https://titan-syndicate.github.io/agent-analytics/insights/demo/)**
 for what to click and which cost-driver questions each tool can answer.
+Start with [the model-call mental model](https://titan-syndicate.github.io/agent-analytics/foundations/model-calls/),
+then follow the scenario links to separate
+[Grafana](https://titan-syndicate.github.io/agent-analytics/insights/demo-grafana/),
+[Phoenix](https://titan-syndicate.github.io/agent-analytics/insights/demo-phoenix/) and
+[Langfuse](https://titan-syndicate.github.io/agent-analytics/insights/demo-langfuse/)
+walkthroughs. They include first-time navigation, exact rows/values and the limits
+of cached-input and input-component analysis.
 Then read the [cost objective](https://titan-syndicate.github.io/agent-analytics/insights/cost-objective/),
 [agent analysis prompts](https://titan-syndicate.github.io/agent-analytics/insights/agent-analysis/)
 and [research digest](https://titan-syndicate.github.io/agent-analytics/reference/cost-research/).

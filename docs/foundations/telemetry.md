@@ -2,6 +2,8 @@
 
 **OTel gives us a structured execution record, not proof of correctness or complete access to an agent's mind.** This page summarizes the [official CLI monitoring reference](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference#opentelemetry-monitoring), checked October 4, 2026.
 
+For a less technical starting point, read [how a user request becomes model calls](model-calls.md). It connects input/output, caching, tools and skills to the viewer labels, and explains why token totals do not give us an input-component breakdown.
+
 ## Four different things often called “metrics”
 
 | Signal | What it contains | Best use |
